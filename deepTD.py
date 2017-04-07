@@ -3,87 +3,12 @@ import numpy as np
 from numpy import pi
 import tensorflow as tf
 import matplotlib.pyplot as plt
-
-###### CLASS puddleworld ######################################
-import math
-from scipy.spatial.distance import cdist
-######
-def closest_point(pt, others):
-    distances = cdist(pt, others)
-    return others[distances.argmin()]
-        
-def shortest_distance(pt, others):
-        distances = cdist(pt, others)
-        return np.min(distances)
-
-class puddleworld:    
-    def __init__(self):
-        puddle = self.CreatePointOutsidePuddle()
-        self.puddle = puddle
-    
-    def CreatePointOutsidePuddle(self):
-        puddle = []
-        # to find an accurate distance to edge mess is finer
-        ngrid = [40, 40]
-        x_vec = np.linspace(0,1,ngrid[0])
-        y_vec = np.linspace(0,1,ngrid[1])
-        for x in x_vec:
-            for y in y_vec:
-                if ~self.inpuddle([x,y]):
-                    puddle.append([x,y])
-        # puddle is a closed loop 
-        outpuddlepts = np.asarray(puddle)
-        return outpuddlepts
-
-
-    def inpuddle(self, state):
-        agentinPuddle = False
-        # Horizontal wing of puddle consists of 
-        # 1) rectangle area xch1<= x <=xc2 && ych1-radius <= y <=ych2+radius
-        # (xchi,ychi) is the center points (h ==> horizantal)
-        # x, y = state[0], state[1]
-        x, y = state[0], state[1]
-        xch1, ych1 = 0.3, 0.75
-        xch2, ych2 = 0.65, ych1
-        radius = 0.1
-        inHorRec = (x>=xch1) and (y>= ych1-radius) and (x<=xch2)  and (y<=ych2+radius)   
-        # 2) two half-circle at end edges of rectangle
-        inHorCir1 = ( ( (x-xch1)**2 + (y-ych1)**2 <= radius**2 ) and x<xch1 )
-        inHorCir2 = ( ((x-xch2)**2 + (y-ych2)**2) <= radius**2 and x>xch2 )
-        inHor = inHorRec or inHorCir1 or inHorCir2
-
-        #Vertical wing of puddle consists of 
-        # 1) rectangle area xcv1-radius<= x <=xcv2+radius && ycv1 <= y <= ycv2
-        # where (xcvi,ycvi) is the center points (v ==> vertical)
-        xcv1 = 0.45; ycv1=0.4;
-        xcv2 = xcv1; ycv2 = 0.8;
-
-        inVerRec = (x >= xcv1-radius) and (y >= ycv1) and (x <= xcv2+radius) and (y <= ycv2)    
-        # % 2) two half-circle at end edges of rectangle
-        inVerCir1 = ( ( (x-xcv1)**2 + (y-ycv1)**2 <= radius**2 ) and y<ycv1 )
-        inVerCir2 = ( ( (x-xcv2)**2 + (y-ycv2)**2 <= radius**2 ) and y>ycv2 )
-        inVer = inVerRec or inVerCir1 or inVerCir2
-
-        agentinPuddle = inHor or inVer
-
-        return agentinPuddle
-
-    def dist2edge(self, state):
-        state =np.asarray([state])
-        dist2edge = shortest_distance(state , self.puddle)
-        return dist2edge
-############################ END CLASS puddleworld ############################
-
+from puddleworld import PuddleWorld
+from model import Model
 
 
 ########################### AGENT #############################################
-def build_states_list(x_vec,y_vec):
-    states_list = []
-    for x in x_vec:
-        for y in y_vec:
-            states_list.append([x,y])
-    return states_list
-
+"""
 def kWTA(a,k):
     # compute top k+1 and top k activated units in hidden layer
     a_kp1,id_kp1 = tf.nn.top_k(a, k=k+1, sorted=True, name=None)
@@ -99,36 +24,41 @@ def kWTA(a,k):
 
     a_kWTA = a - bias_kWTA
     return a_kWTA
-
-
+"""
+"""
 def normpdf(x_vec,mu,sigma):
     # normal probability distribution with mean mu and std sigma
     y = np.exp(- np.square(x_vec - mu) / (2 * sigma * sigma))
     return y
 
 def encoder(state,discrete_state_vec):
-    input = []
+    input_vec = []
     i = 0
     for x in state:
         mu = x
-        x_vec = discrete_state_vec[i]
+        x_vec = discrete_state_vec[dim_id]
         sigma = np.max(np.ediff1d(x_vec))
-        i = i+1
-        input.append(normpdf(x_vec,mu,sigma))
+        dim_id += 1
+        input_vec.append(normpdf(x_vec,mu,sigma))
     #input.flatten()
-    input = np.array(input)
-    input = input.flatten()
-    return input
+    input_vec = np.array(input)
+    input_vec = input.flatten()
+    return input_vec
+"""
 
-def agent():
-    return 0
 
-def forward_path(x,w):
+"""
+def forward_path(x,w,b):
     a = tf.matmul(x, w[0]) + b[0]
-    h = kWTA(a,k)
+    if kwta_use:
+        a = kWTA(a,kwta_num)
+    h = tf.sigmoid(a)
     y = tf.matmul(h, w[1]) + b[1]
     return y
+"""
 
+
+"""
 def random_init_state(nd):
     return np.random.random(nd)
 
@@ -142,88 +72,22 @@ def select_action(Q):
     
     action[act_index] = 1
     return action
+"""
+
+
+
+
 
 ##################### Environment #############################################
-def environment(state, action):
-        
-    def update_state():
-        inc_state = state + np.multiply(meshsize , action_list[np.argmax(action)] )
-        state_update = np.minimum(inc_state , [1,1])
-        state_update = np.maximum(inc_state, [0,0])
-        return state_update
 
-    def bumped2wall():
-        inc_state = state + np.multiply(meshsize , action_list[np.argmax(action)] )
-        bumped = False
-        if (np.min(inc_state) < 0 or np.max(inc_state) > 1) :
-            bumped = True
-        return bumped
-
-
-    def success():
-        reach2goal = False
-        if all(state_update == goal):
-            reach2goal = True
-        return reach2goal
-
-    def env_reward():
-        # cost of any action
-        reward = -1
-        if success():
-            reward = 0
-        elif bumped2wall():
-            reward = -2
-        elif inPuddle(state):
-            reward = -400 * dist2Edge(state)
-        
-        return reward
-
-    state_update = update_state()
-    reach2goal = success()
-    reward = env_reward()
-
-    return state_update , reward, reach2goal
-
+environment = PuddleWorld()
+agent = Agent()
 
 ################ Episode ###################################################
-def episode(agent,environment):
-    T = maxStep
 
-    states = np.zeros([T,nx])
-    actions = np.zeros([T,no])
-    means = np.zeros([T,no])
-    errors = np.zeros([T,nx])
-    rewards = np.zeros([T,1])
+class Episode:
+    pass
 
-    # initialize state
-    state = random_init_state(nd)
-    # encoded state to feed to NN
-    enc_state = encoder(state,discrete_state_vec)
-
-    y = forward_path(x,w)
-    feed={x: enc_state}
-    # Q(s0,:)
-    Q = sess.run(y,feed)
-    action = select_action(nA,Q)
-
-
-    for t in range(T):
-        success = (state == goal)
-        # collect (st,at)
-        states[t,:] = state
-        actions[t,:] = action
-      
-
-
-
-
-        if success:
-            break
-
-
-
-
-    return states, actions, means, errors, rewards
 
 
 ############ task related parameters --- 2D puddle world #####################
@@ -233,7 +97,7 @@ goal = np.array([1.0,1.0])  # end state
 bound = [[0,1] , [0,1]]
 bound_x = [0.0,1.0]
 bound_y = [0.0,1.0]
-bound_state = (bound_x,bound_y)
+bound_state = [bound_x,bound_y]
 
 # list of available actions for puddle world agent
 # actions = ['UP' , 'DOWN' , 'RIGHT' , 'LEFT']
@@ -241,7 +105,8 @@ nA = 4
 action_list = [[0,1],[0,-1],[1,0],[-1,0]]
 
 
-############ Discretization of continouos state space ########################
+############ Environment parameters ###########################################
+############ Discretization of continouos state space #########################
 ngridx = 10
 ngridy = 10
 ngrid = [ngridx,ngridy]
@@ -249,19 +114,27 @@ meshsize = [1/ngridx , 1/ngridy] # uniform meshing here
 x_vec = np.linspace(bound_x[0],bound_x[1],ngridx+1)
 y_vec = np.linspace(bound_y[0],bound_y[1],ngridy+1)
 
-discrete_state_vec = (x_vec , y_vec)
-states_list = build_states_list(x_vec,y_vec)
+discrete_state_vec = np.array([x_vec , y_vec])
+states_list = environment.states_list # build_states_list(x_vec,y_vec)
 nStates = len(states_list)
 
 
 ############### Agent's Brain: netwrok parameters #############################
-nx = len(x_vec) + len(y_vec) # input size after Gaussian Distribution
+encoder_use = True
+
+if encoder_use:
+    nx = len(x_vec) + len(y_vec) # input size after Gaussian Distribution
+else:
+    nx = nd
+
 nh = round(0.5 * nStates)    # num hidden units
 no = nA # size of output layer
 
-k_rate = 0.1 # 10% of hidden  units are active for kWTA
-k = round(k_rate*nh) # number of winner units
+kwta_use = True
+kwta_rate = 0.1 # 10% of hidden  units are active for kWTA
+kwta_num = round(kwta_rate*nh) # number of winner units
 
+encoder_use = True
 
 ############# Simulation parameters ###########################################
 lr = 0.005 # learning rate
@@ -290,7 +163,7 @@ with tf.Graph().as_default() as graph:
     ################## Forward path in tf graph ###############################
     with tf.name_scope('forwardpath'):
         x = tf.placeholder(tf.float32, [1,nx])
-        y = forward_path(x,w)
+        y = forward_path(x,w,b)
 
     ################### Compute gradients for update weights ################## 
     with tf.name_scope('backward_pass'):
@@ -340,7 +213,7 @@ with tf.Session(graph=graph) as sess:
     sess.run(init)
 
     
-    y = forward_path(x,w)
+    y = forward_path(x,w,b)
     feed={x: np.random.rand(1,22)}
 
     # print(sess.run(y,feed))
