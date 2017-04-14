@@ -1,2 +1,0 @@
-class TDSimulation:
-	pass
