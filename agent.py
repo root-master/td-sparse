@@ -11,7 +11,7 @@ class Agent:
 					discrete_state_vec,
 					encoder_use = True):
 		# initilize agent critic network
-		self.model = Model()
+		#self.model = Model(nx=42,nh=220,no=4,kwta_use = True,kwta_rate = 0.1,learning_rate=0.005)
 		self.nd = nd
 		self.nA = nA
 		self.discrete_state_vec = discrete_state_vec
@@ -38,7 +38,7 @@ class Agent:
 
 	def normpdf(self,x_vec,mu,sigma):
 		# normal probability distribution with mean mu and std sigma
-		y = np.exp(- np.square(x_vec - mu) / (2 * sigma * sigma))
+		y = np.exp( - np.square(x_vec - mu) / (2 * sigma * sigma) )
 		# y = y.reshape((1,y.size))
 
 		return y

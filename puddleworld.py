@@ -42,9 +42,8 @@ class PuddleWorld:
                 state_bound = [[0,1],[0,1]],
                 nA = 4,
                 action_list = [[0,1],[0,-1],[1,0],[-1,0]],
-                ngrid = [10.0,10.0],
-                maxStep = 40):
-        """
+                ngrid = [20.0,20.0],
+                maxStep = 80):
         # Parameters should be in a parameter list or sth?
         nd = 2 # DOF
         goal = np.array([1.0,1.0])  # end state
@@ -55,12 +54,7 @@ class PuddleWorld:
         nA = 4
         action_list = [[0,1],[0,-1],[1,0],[-1,0]]
         ############ Discretization of continouos state space ########################
-        ngridx = 10
-        ngridy = 10
-        ngrid = [ngridx,ngridy]
-        """
         meshsize = [1/ngrid[0] , 1/ngrid[1]] # uniform meshing here
-        puddle = self.createPointsOutsidePuddle()
         discrete_state_vec = discretizatize_state_vector(state_bound, ngrid)
         states_list =  build_states_list(discrete_state_vec)
         
@@ -68,7 +62,6 @@ class PuddleWorld:
         self.nd = nd
         self.nA = nA
         self.goal = goal
-        self.puddle = puddle
         self.action_list = action_list
         self.state_bound = state_bound
         self.discrete_state_vec = discrete_state_vec
@@ -76,6 +69,11 @@ class PuddleWorld:
         self.ngrid = ngrid
         self.meshsize = meshsize
         self.maxStep = maxStep
+        self.nStates = states_list.shape[0]
+
+        puddle = self.createPointsOutsidePuddle()
+        self.puddle = puddle
+        
         print('Environment: ' + self.EnvironmentName)
         
     
@@ -90,6 +88,7 @@ class PuddleWorld:
     def createPointsOutsidePuddle(self):
         puddle = []
         # to find an accurate distance to edge mess is finer
+        """
         ngrid = [40, 40]
         x_vec = np.linspace(0,1,ngrid[0])
         y_vec = np.linspace(0,1,ngrid[1])
@@ -98,6 +97,75 @@ class PuddleWorld:
                 if ~self.inPuddle([x,y]):
                     puddle.append([x,y])
         # puddle is a closed loop 
+        outpuddlepts = np.asarray(puddle)
+        """
+
+
+        # Horizontal wing of puddle consists of 
+        # 1) rectangle area xch1<= x <=xc2 && ych1-radius <= y <=ych2+radius
+        # (xchi,ychi) is the center points (h ==> horizantal)
+        # x, y = state[0], state[1]
+        xch1, ych1 = 0.3, 0.7
+        xch2, ych2 = 0.65, ych1
+        radius = 0.1
+
+
+        #Vertical wing of puddle consists of 
+        # 1) rectangle area xcv1-radius<= x <=xcv2+radius && ycv1 <= y <= ycv2
+        # where (xcvi,ycvi) is the center points (v ==> vertical)
+        xcv1 = 0.45; ycv1=0.4;
+        xcv2 = xcv1; ycv2 = 0.8;
+
+        # % 2) two half-circle at end edges of rectangle
+        
+        # POINTS ON HORIZANTAL LINES OF PUDDLE BOUNDARY
+        for x in np.arange(xch1,xcv1-radius,self.meshsize[0]/2):
+            puddle.append([x,ych1-radius])
+        puddle.append([xcv1-radius,ych1-radius])
+        
+        for x in np.arange(xcv1+radius,xch2,self.meshsize[0]/2):
+            puddle.append([x,ych1-radius])
+        
+        for x in np.arange(xch1,xcv1-radius,self.meshsize[0]/2):
+            puddle.append([x,ych1+radius])
+        
+        puddle.append([xcv1-radius,ych1+radius])
+
+
+        for x in np.arange(xcv1+radius,xch2,self.meshsize[0]/2):
+            puddle.append([x,ych1+radius])
+
+        # POINTS ON VERTICAL LINES OF PUDDLE BOUNDARY
+        for y in np.arange(ycv1,ych1-radius,self.meshsize[1]/2):
+            puddle.append([xcv1-radius,y])
+        
+        for y in np.arange(ycv1,ych1-radius,self.meshsize[1]/2):
+            puddle.append([xcv1+radius,y])
+        """
+        for y in np.arrange():
+            puddle.append([])
+        
+        for y in np.arrange():
+            puddle.append([])
+        """
+
+        # HALF CIRCLES
+        ngridTheta = 10
+        thetaVec = np.linspace(0,pi,ngridTheta)
+
+        for t in thetaVec:
+            puddle.append([xch1+radius*np.cos(pi/2+t),ych1+radius*np.sin(pi/2+t)])
+
+        for t in thetaVec:
+            puddle.append([xch2+radius*np.cos(-pi/2+t),ych2+radius*np.sin(-pi/2+t)])
+
+        for t in thetaVec:
+            puddle.append([xcv1+radius*np.cos(pi+t),ycv1+radius*np.sin(pi+t)])
+
+        for t in thetaVec:
+            puddle.append([xcv2+radius*np.cos(t),ycv2+radius*np.sin(t)])
+
+        
         outpuddlepts = np.asarray(puddle)
         return outpuddlepts
 
@@ -109,7 +177,7 @@ class PuddleWorld:
         # (xchi,ychi) is the center points (h ==> horizantal)
         # x, y = state[0], state[1]
         x, y = state[0], state[1]
-        xch1, ych1 = 0.3, 0.75
+        xch1, ych1 = 0.3, 0.7
         xch2, ych2 = 0.65, ych1
         radius = 0.1
         inHorRec = (x>=xch1) and (y>= ych1-radius) and (x<=xch2)  and (y<=ych2+radius)   
@@ -156,7 +224,7 @@ class PuddleWorld:
         elif self.bumped2wall(state, action):
             reward = -2
         elif self.inPuddle(state_update):
-            reward = -400 * self.dist2edge(state_update)
+            reward = np.min([-400 * self.dist2edge(state_update),-1])
         
         return state_update, reward, done
 
@@ -176,6 +244,6 @@ class PuddleWorld:
 
         
 
-p = PuddleWorld()
+# p = PuddleWorld()
 
 ############################ END CLASS puddleworld ############################

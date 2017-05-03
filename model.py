@@ -5,8 +5,8 @@ from numpy import pi
 class Model:
 	
 	def __init__(self,
-				nx=22,
-				nh=120,
+				nx=42,
+				nh=220,
 				no=4,
 				kwta_use = False,
 				kwta_rate = 0.1,
@@ -148,24 +148,24 @@ class Model:
 	"""
 	def eval_output(self,input_vec):
 		
-		with self.sess.as_default():
-			feed_dict = {self.x: input_vec}
-			Q = self.sess.run(self.y, feed_dict = feed_dict)
+		#with self.sess.as_default():
+		feed_dict = {self.x: input_vec}
+		Q = self.sess.run(self.y, feed_dict = feed_dict)
 		return Q
 
 	def update_network(self,input_vec,lr,delta):
-		with self.sess.as_default():
+		#with self.sess.as_default():
 			# update the weights
-			feed_dict = {self.x: input_vec,
-						self.learning_rate_tf:lr,
-						self.delta:delta}
-			update_weights_values = self.sess.run(self.update_w, feed_dict)
-			update_bias_values = self.sess.run(self.update_b, feed_dict)
+		feed_dict = {self.x: input_vec,
+					self.learning_rate_tf:lr,
+					self.delta:delta}
+		update_weights_values = self.sess.run(self.update_w, feed_dict)
+		update_bias_values = self.sess.run(self.update_b, feed_dict)
 
-			self.w[0].assign(update_weights_values[0])
-			self.w[1].assign(update_weights_values[1])
-			self.b[0].assign(update_bias_values[0])
-			self.b[1].assign(update_bias_values[1])
+		self.w[0].assign(update_weights_values[0])
+		self.w[1].assign(update_weights_values[1])
+		self.b[0].assign(update_bias_values[0])
+		self.b[1].assign(update_bias_values[1])
 
 """
 n = Model()
