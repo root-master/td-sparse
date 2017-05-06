@@ -5,9 +5,6 @@ from agent import Agent
 from sarsaepisode import SarsaEpisode
 from timeit import default_timer as timer
 
-# fix random seed for reproducibility
-seed = 43
-np.random.seed(seed)
 
 def kWTA(a,k):
 	"""
@@ -56,7 +53,9 @@ kwta_num = round(k*nh)
 gamma = 0.99
 
 # exloration rate
-epsilon = 0.1
+epsilonMax = 0.1
+epsilon = epsilonMax
+epsilonMin = 0.001
 
 # learning rate
 lr = 0.005
@@ -139,8 +138,10 @@ with tf.Session(graph=graph) as sess:
 			# compute Temporal Difference error delta
 			if ~done:
 			    delta = r + gamma * Qp1[0,np.argmax(ap1)] - Q[0,np.argmax(a)]
+			    # delta = r + gamma * np.max(Qp1) - Q[0,np.argmax(a)]
 			else:
 			    delta = r - Q[0,np.argmax(a)]
+
 
 			errors.append(delta)
 			
@@ -148,13 +149,14 @@ with tf.Session(graph=graph) as sess:
 			agent_network_error = np.zeros([1,4])
 			agent_network_error[0,np.argmax(a)] = delta
 			agent_network_error = agent_network_error * lr
-			
+			targetQ = Q + agent_network_error
+
 			# update weights for Q(s,a)			
 			feed_dict={x_tf: agent.network_input(s), error_tf: agent_network_error }
 			update_v = sess.run(update,feed_dict)
 
 			# update state, action, value						
-			s, a, Q = sp1, ap1, Qp1
+			s, a, Q= sp1, ap1, Qp1
 		####### END EPISODE LOOP ########################################################
 
 		if len(errors) > 0:
@@ -166,12 +168,12 @@ with tf.Session(graph=graph) as sess:
 		# decrease exploration if agent is succeeding 0.001<= epilson<= 0.1
 		if done:
 			epsilon = epsilon * 0.999
-			epsilon = np.min( [epsilon , 0.1] )
-			epsilon = np.max( [epsilon , 0.001] )
+			epsilon = np.min( [epsilon , epsilonMax] )
+			epsilon = np.max( [epsilon , epsilonMin] )
 		else: # increase exploration if agnet fails
 			epsilon = epsilon * 1.001
-			epsilon = np.min( [epsilon, 0.1] )
-			epsilon = np.max( [epsilon , 0.001] )
+			epsilon = np.min( [epsilon, epsilonMax] )
+			epsilon = np.max( [epsilon , epsilonMin] )
 
 		
 		# count good episodes with small error    
