@@ -64,13 +64,13 @@ act_after_kwta = tf.sigmoid(act_after_kwta)
 act_no_kwta = tf.sigmoid(net_0)
 
 # ignore kwta gradient
-act_0 = act_no_kwta + tf.stop_gradient( act_after_kwta - act_no_kwta)
-#act_0 = tf.sigmoid(act_after_kwta)
+#act_0 = act_no_kwta + tf.stop_gradient( act_after_kwta - act_no_kwta)
+act_0 = tf.sigmoid(act_after_kwta)
 
 y = tf.matmul(act_0, w['1_w_fc']) + w['1_b_fc']
 
-#loss = 1/2 * tf.reduce_mean(tf.square(y - y_))
-loss = tf.losses.mean_squared_error(y, y_)
+loss = 1/2 * tf.reduce_mean(tf.square(y - y_))
+#loss = tf.losses.mean_squared_error(y, y_)
 ###############################################################################
 ################# Gradeints -- update weights of Q function ###################
 ###############################################################################
