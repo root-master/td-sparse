@@ -58,8 +58,8 @@ for key, _ in dim_w.items():
 											initializer=w_initializer)
 
 net_0 = tf.matmul(x, w['0_w_fc']) + w['0_b_fc']
-act_after_kwta = kWTA(net_0, kwta_num)
-act_after_kwta = tf.sigmoid(act_after_kwta)
+net_after_kwta = kWTA(net_0, kwta_num)
+act_after_kwta = tf.sigmoid(net_after_kwta)
 
 act_no_kwta = tf.sigmoid(net_0)
 
