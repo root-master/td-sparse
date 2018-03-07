@@ -18,7 +18,7 @@ env = PuddleWorld(nd = 2,
 ###############################################################################
 
 nx = env.input_size
-nh = env.states_list.size 
+nh = len(env.states_list) // 2
 no = env.nA
 
 kwta_rate = 0.1
