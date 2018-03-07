@@ -50,7 +50,7 @@ dim_w['1_w_fc'] = [nh,no]
 dim_w['1_b_fc'] = [1,no]
 
 w_initializer = tf.contrib.layers.xavier_initializer()
-
+w_initializer = tf.random_uniform_initializer(-0.01, 0.01)
 w = {}
 for key, _ in dim_w.items():
 	w[key] = tf.get_variable(key, shape=dim_w[key], 
