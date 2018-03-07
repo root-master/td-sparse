@@ -30,8 +30,10 @@ def kWTA(a,k):
 	a_kp1,id_kp1 = tf.nn.top_k(a, k=k+1, sorted=True, name=None)
 	a_k,id_k = tf.nn.top_k(a, k=k, sorted=True, name=None)
 	# now find the kth and (k+1)th activation 
-	a_k_k = tf.reduce_min(a_k, reduction_indices=None, keep_dims=False, name=None)
-	a_kp1_kp1 = tf.reduce_min(a_kp1, reduction_indices=None, keep_dims=False, name=None)
+	a_k_k = tf.reduce_min(a_k, reduction_indices=None, 
+										keep_dims=False, name=None)
+	a_kp1_kp1 = tf.reduce_min(a_kp1, reduction_indices=None, 
+										keep_dims=False, name=None)
 	# kWTA bias term
 	q = 0.5
 	bias_kWTA = a_kp1_kp1 + q * (a_k_k - a_kp1_kp1)
