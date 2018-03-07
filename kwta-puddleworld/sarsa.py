@@ -144,14 +144,17 @@ def value_function(sess, s):
 	return sess.run(y,feed_dict=feed_dict)
 
 def update_weights(sess, s, target, lr):
-	w_val = sess.run(w)
+	
 	feed_dict = {x: network_input(s),
 				 y_: target,
 				 lr_tf: lr}
+
+	# for method 1
+	# w_val = sess.run(w)
 	# gw_val = sess.run(gw,feed_dict=feed_dict)
 	# new_w = {}
 	# for layer, _ in w.items():
-	# 	new_w[layer] = w_val[layer]-lr*gw_val[layer][0]
+	# 	new_w[layer] = w_val[layer]-lr * gw_val[layer][0]
 	# 	feed_dict.update({update_w_placeholder[layer]: new_w[layer]})
 
 	sess.run(update_w, feed_dict=feed_dict)
@@ -164,7 +167,7 @@ nA = env.nA
 
 gamma = 0.99
 epsilon = 0.05
-lr = 0.0001
+lr = 0.001
 max_episodes = 4000
 
 init = tf.global_variables_initializer()
