@@ -50,7 +50,7 @@ dim_w['1_w_fc'] = [nh,no]
 dim_w['1_b_fc'] = [1,no]
 
 # w_initializer = tf.contrib.layers.xavier_initializer()
-w_initializer = tf.random_uniform_initializer(-0.05, 0.05)
+w_initializer = tf.random_uniform_initializer(-0.01, 0.01)
 
 w = {}
 for key, _ in dim_w.items():
@@ -64,9 +64,9 @@ act_after_kwta = tf.sigmoid(net_after_kwta)
 act_no_kwta = tf.sigmoid(net_0)
 
 # ignore kwta gradient
-# act_0 = act_no_kwta + tf.stop_gradient( act_after_kwta - act_no_kwta )
+act_0 = act_no_kwta + tf.stop_gradient( act_after_kwta - act_no_kwta )
 # act_0 = act_no_kwta
-act_0 = act_after_kwta
+# act_0 = act_after_kwta
 
 y = tf.matmul(act_0, w['1_w_fc']) + w['1_b_fc']
 
@@ -77,9 +77,9 @@ loss = tf.reduce_mean(tf.square(y - y_))
 ###############################################################################
 # I am not sure how this is going to turn out
 # since kwta is hightly nonlinear
-# gw = {}
-# for layer, _ in w.items():
-# 	gw[layer] = tf.gradients(xs=w[layer], ys=loss)
+gw = {}
+for layer, _ in w.items():
+	gw[layer] = tf.gradients(xs=w[layer], ys=loss)
 
 lr_tf = tf.placeholder(tf.float32)
 
@@ -92,9 +92,9 @@ lr_tf = tf.placeholder(tf.float32)
 # 	update_w[layer] = w[layer].assign( update_w_placeholder[layer] )
 
 # method 2 to update weights -- both should work
-# update_w = {}
-# for layer, _ in w.items():
-# 	update_w[layer] = w[layer].assign( w[layer] - lr_tf * gw[layer][0] )
+update_w = {}
+for layer, _ in w.items():
+	update_w[layer] = w[layer].assign( w[layer] - lr_tf * gw[layer][0] )
 
 
 # todo
@@ -120,8 +120,8 @@ lr_tf = tf.placeholder(tf.float32)
 
 
 # method 4
-trainer = tf.train.GradientDescentOptimizer(learning_rate=lr_tf)
-update_w = trainer.minimize(loss)
+# trainer = tf.train.GradientDescentOptimizer(learning_rate=lr_tf)
+# update_w = trainer.minimize(loss)
 
 def random_init_state(nd):
 	# s = np.random.random(nd)
@@ -249,11 +249,11 @@ with tf.Session() as sess:
 		# modify exploration-vs-exploitation and learning rate
 		mean_errors.append( np.mean(errors) )
 		if abs( np.mean(errors)) < 0.2 and done:
-			epsilon = max(0.001, 0.999 * epsilon)
-			#lr = max(1E-6, 0.99 * lr )
+			epsilon = max(0.001, 0.99 * epsilon)
+			lr = max(1E-6, 0.99 * lr )
 		else:
 			epsilon = min(0.1, epsilon * 1.01)
-			#lr = min(0.001, 1.01 * lr )
+			lr = min(0.001, 1.01 * lr )
 
 		# convergence condition
 		if abs( np.mean(errors)) < 0.05 and done:
