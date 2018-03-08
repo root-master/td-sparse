@@ -2,7 +2,7 @@
 clc, close all, clear all;
 withBias = false;
 
-nMeshx = 4; nMeshy = 4;
+nMeshx = 20; nMeshy = 20;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';

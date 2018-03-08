@@ -137,7 +137,7 @@ class PuddleWorld:
         return agentinPuddle
 
     def dist2edge(self, state):
-        state =np.asarray([state])
+        state = np.asarray([state])
         dist2edge = shortest_distance(state , self.puddle)
         return dist2edge
 

@@ -24,11 +24,11 @@ no = env.nA
 kwta_rate = 0.1
 kwta_num = round(kwta_rate * nh)
 
-def kWTA(a,k):
+def kWTA(net,k):
 	shunt = 1
 	# compute top k+1 and top k activated units in hidden layer
-	a_kp1,id_kp1 = tf.nn.top_k(a, k=k+1, sorted=True, name=None)
-	a_k,id_k = tf.nn.top_k(a, k=k, sorted=True, name=None)
+	a_kp1,id_kp1 = tf.nn.top_k(net, k=k+1, sorted=True, name=None)
+	a_k,id_k = tf.nn.top_k(net, k=k, sorted=True, name=None)
 	# now find the kth and (k+1)th activation 
 	a_k_k = tf.reduce_min(a_k, reduction_indices=None, 
 										keep_dims=False, name=None)
@@ -37,7 +37,7 @@ def kWTA(a,k):
 	# kWTA bias term
 	q = 0.25
 	bias_kWTA = a_kp1_kp1 + q * (a_k_k - a_kp1_kp1)
-	a_kWTA = a - bias_kWTA - shunt
+	a_kWTA = net - bias_kWTA - shunt
 	return a_kWTA
 
 x = tf.placeholder(tf.float32,[1,nx])
@@ -50,7 +50,7 @@ dim_w['1_w_fc'] = [nh,no]
 dim_w['1_b_fc'] = [1,no]
 
 # w_initializer = tf.contrib.layers.xavier_initializer()
-w_initializer = tf.random_uniform_initializer(-0.1, 0.1)
+w_initializer = tf.random_uniform_initializer(-0.05, 0.05)
 
 w = {}
 for key, _ in dim_w.items():
@@ -65,12 +65,12 @@ act_no_kwta = tf.sigmoid(net_0)
 
 # ignore kwta gradient
 # act_0 = act_no_kwta + tf.stop_gradient( act_after_kwta - act_no_kwta )
-
+# act_0 = act_no_kwta
 act_0 = act_after_kwta
 
 y = tf.matmul(act_0, w['1_w_fc']) + w['1_b_fc']
 
-loss = 1/2 * tf.reduce_mean(tf.square(y - y_))
+loss = tf.reduce_mean(tf.square(y - y_))
 #loss = tf.losses.mean_squared_error(y, y_)
 ###############################################################################
 ################# Gradeints -- update weights of Q function ###################
@@ -101,6 +101,9 @@ for layer, _ in w.items():
 # method 3 to update weights -- ignore kwta gradient
 # manual computation of gradient
 
+# method 4
+# trainer = tf.train.GradientDescentOptimizer(learning_rate=lr_tf)
+# update_w = trainer.minimize(loss)
 
 def random_init_state(nd):
 	# s = np.random.random(nd)
@@ -179,7 +182,7 @@ with tf.Session() as sess:
 		states = np.zeros([T,nd])
 		actions = np.zeros([T,nA])
 		means = np.zeros([T,nA])
-		errors = np.zeros([T])
+		errors = []
 		rewards = np.zeros([T,1])
 		done = False
 
@@ -202,13 +205,24 @@ with tf.Session() as sess:
 			else:
 			    delta = r - Q[0,np.argmax(a)]
 
-			errors[t] = delta
+			errors.append(delta)
 			target = Q
 			target[0,np.argmax(a)] += delta
 			update_weights(sess, s, target, lr)
 
-			if done:
-				print('Episode: {} s0: {} steps: {}' .format(e, s0, t) )
-				break
+			# modify exploration-vs-exploitation and learning rate
+			if abs( np.mean(errors)) < 0.2 and done:
+				epsilon = max(0.001, 0.999 * epsilon)
+				lr = max(1E-6, 0.999 * lr )
+			else:
+				epsilon = min(0.1, epsilon * 1.01)
+				lr = min(0.001, 1.01 * lr )
 
+			if done:
+				print('Episode: {} s0: {} steps: {}' .format(e, s0, t) )			
+				break
+		
 			s, a, Q = sp1, ap1, Qp1
+		
+		
+		

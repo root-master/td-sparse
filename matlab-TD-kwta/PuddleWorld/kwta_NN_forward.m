@@ -21,9 +21,9 @@ id = idsort(1:k);
 eta = net - biaskwta - shunt; % shunt is a positive number which is the shift to left in activation-eta
 
 % hidden activation
-h = zeros(1,length(eta));
+%h = zeros(1,length(eta));
 
-h(id) = 1./(1 + exp(- eta(id)));
+h = 1./(1 + exp(- eta));
 
 o = h * Who + biasho; % Output
 
