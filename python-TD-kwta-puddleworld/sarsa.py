@@ -22,7 +22,7 @@ nh = len(env.states_list) // 2
 no = env.nA
 
 kwta_rate = 0.1
-kwta_num = round(kwta_rate * nh)
+kwta_num = round(kwta_rate * nh) 
 
 def kWTA(net,k):
 	shunt = 1
@@ -77,9 +77,9 @@ loss = tf.reduce_mean(tf.square(y - y_))
 ###############################################################################
 # I am not sure how this is going to turn out
 # since kwta is hightly nonlinear
-gw = {}
-for layer, _ in w.items():
-	gw[layer] = tf.gradients(xs=w[layer], ys=loss)
+# gw = {}
+# for layer, _ in w.items():
+# 	gw[layer] = tf.gradients(xs=w[layer], ys=loss)
 
 lr_tf = tf.placeholder(tf.float32)
 
@@ -92,18 +92,36 @@ lr_tf = tf.placeholder(tf.float32)
 # 	update_w[layer] = w[layer].assign( update_w_placeholder[layer] )
 
 # method 2 to update weights -- both should work
-update_w = {}
-for layer, _ in w.items():
-	update_w[layer] = w[layer].assign( w[layer] - lr_tf * gw[layer][0] )
+# update_w = {}
+# for layer, _ in w.items():
+# 	update_w[layer] = w[layer].assign( w[layer] - lr_tf * gw[layer][0] )
 
 
 # todo
 # method 3 to update weights -- ignore kwta gradient
 # manual computation of gradient
+# delta_tf = y_ - y
+# # manual gradient
+# gw = {}
+# gw['1_w_fc'] = tf.matmul(act_0,delta_tf,
+# 				transpose_a=True,transpose_b=False)
+# gw['1_b_fc'] = delta_tf
+# delta_j = tf.multiply( tf.multiply( act_0,(1.0-act_0) ) , 
+# 					tf.matmul( delta_tf , tf.transpose(w['1_w_fc']) ) )
+
+
+# gw['0_w_fc'] = tf.matmul(x, delta_j,
+# 				transpose_a=True,transpose_b=False)
+# gw['0_b_fc'] = delta_j
+
+# update_w = {}
+# for layer, _ in w.items():
+# 	update_w[layer] = w[layer].assign( w[layer] + lr_tf * gw[layer] )
+
 
 # method 4
-# trainer = tf.train.GradientDescentOptimizer(learning_rate=lr_tf)
-# update_w = trainer.minimize(loss)
+trainer = tf.train.GradientDescentOptimizer(learning_rate=lr_tf)
+update_w = trainer.minimize(loss)
 
 def random_init_state(nd):
 	# s = np.random.random(nd)
@@ -173,7 +191,10 @@ nA = env.nA
 gamma = 0.99
 epsilon = 0.1	
 lr = 0.005
-max_episodes = 4000
+max_episodes = 40000
+successful_episodes = 0
+consecutive_successful_episodes = 0
+mean_errors = []
 
 init = tf.global_variables_initializer()
 with tf.Session() as sess:
@@ -213,16 +234,39 @@ with tf.Session() as sess:
 			# modify exploration-vs-exploitation and learning rate
 			if abs( np.mean(errors)) < 0.2 and done:
 				epsilon = max(0.001, 0.999 * epsilon)
-				lr = max(1E-6, 0.999 * lr )
+				# lr = max(1E-6, 0.999 * lr )
 			else:
 				epsilon = min(0.1, epsilon * 1.01)
-				lr = min(0.001, 1.01 * lr )
+				# lr = min(0.001, 1.01 * lr )
 
 			if done:
+				successful_episodes += 1
 				print('Episode: {} s0: {} steps: {}' .format(e, s0, t) )			
 				break
 		
 			s, a, Q = sp1, ap1, Qp1
+
+		# modify exploration-vs-exploitation and learning rate
+		mean_errors.append( np.mean(errors) )
+		if abs( np.mean(errors)) < 0.2 and done:
+			epsilon = max(0.001, 0.999 * epsilon)
+			#lr = max(1E-6, 0.99 * lr )
+		else:
+			epsilon = min(0.1, epsilon * 1.01)
+			#lr = min(0.001, 1.01 * lr )
+
+		# convergence condition
+		if abs( np.mean(errors)) < 0.05 and done:
+			consecutive_successful_episodes += 1
+		else:
+			consecutive_successful_episodes = 0
+
+		convergence = consecutive_successful_episodes > 100
+		if convergence:
+			print('maybe convergence')
+			break
+
+
 		
 		
 		
