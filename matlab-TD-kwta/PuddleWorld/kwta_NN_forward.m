@@ -1,5 +1,4 @@
 function [o,h,id]  = kwta_NN_forward(s,shunt, Wih,biasih, Who,biasho) 
-    
 
 nCellHidden = length(Wih);
 

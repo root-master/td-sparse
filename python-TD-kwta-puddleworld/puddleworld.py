@@ -91,7 +91,7 @@ class PuddleWorld:
     def createPointsOutsidePuddle(self):
         puddle = []
         # to find an accurate distance to edge mess is finer
-        ngrid = [40, 40]
+        ngrid = [20, 20]
         x_vec = np.linspace(0,1,ngrid[0])
         y_vec = np.linspace(0,1,ngrid[1])
         for x in x_vec:
@@ -110,7 +110,7 @@ class PuddleWorld:
         # (xchi,ychi) is the center points (h ==> horizantal)
         # x, y = state[0], state[1]
         x, y = state[0], state[1]
-        xch1, ych1 = 0.3, 0.75
+        xch1, ych1 = 0.3, 0.7
         xch2, ych2 = 0.65, ych1
         radius = 0.1
         inHorRec = (x>=xch1) and (y>= ych1-radius) and (x<=xch2)  and (y<=ych2+radius)   
@@ -137,9 +137,103 @@ class PuddleWorld:
         return agentinPuddle
 
     def dist2edge(self, state):
-        state = np.asarray([state])
-        dist2edge = shortest_distance(state , self.puddle)
-        return dist2edge
+        agentinPuddle = False
+        closestDist = 0.0
+        # Horizontal wing of puddle consists of 
+        # 1) rectangle area xch1<= x <=xc2 && ych1-radius <= y <=ych2+radius
+        # (xchi,ychi) is the center points (h ==> horizantal)
+        # x, y = state[0], state[1]
+        x, y = state[0], state[1]
+        xch1, ych1 = 0.3, 0.7
+        xch2, ych2 = 0.65, ych1
+        radius = 0.1
+        inHorRec = (x>=xch1) and (y>= ych1-radius) and (x<=xch2)  and (y<=ych2+radius)   
+        # 2) two half-circle at end edges of rectangle
+        inHorCir1 = ( ( (x-xch1)**2 + (y-ych1)**2 <= radius**2 ) and x<xch1 )
+
+        inHorCir2 = ( ((x-xch2)**2 + (y-ych2)**2) <= radius**2 and x>xch2 )
+        inHor = inHorRec or inHorCir1 or inHorCir2
+
+        #Vertical wing of puddle consists of 
+        # 1) rectangle area xcv1-radius<= x <=xcv2+radius && ycv1 <= y <= ycv2
+        # where (xcvi,ycvi) is the center points (v ==> vertical)
+        xcv1 = 0.45; ycv1=0.4;
+        xcv2 = xcv1; ycv2 = 0.8;
+
+        inVerRec = (x >= xcv1-radius) and (y >= ycv1) and (x <= xcv2+radius) and (y <= ycv2)    
+        # % 2) two half-circle at end edges of rectangle
+        inVerCir1 = ( ( (x-xcv1)**2 + (y-ycv1)**2 <= radius**2 ) and y<ycv1 )
+        inVerCir2 = ( ( (x-xcv2)**2 + (y-ycv2)**2 <= radius**2 ) and y>ycv2 )
+        inVer = inVerRec or inVerCir1 or inVerCir2
+
+        agentinPuddle = inHor or inVer
+
+        num_grids = 20
+        theta = np.linspace(0.0,pi,num=num_grids).reshape(1,-1).T
+        if inHorCir1:
+            xp = xch1 + radius * np.cos(theta+pi/2)
+            yp = ych1 + radius * np.sin(theta+pi/2)
+            points = np.concatenate((xp,yp),axis=1)
+            closestDistHorCircle = shortest_distance(np.asarray([state]), points)
+
+        if inHorCir2:
+            xp = xch1 + radius * np.cos(theta-pi/2)
+            yp = ych1 + radius * np.sin(theta-pi/2)
+            points = np.concatenate((xp,yp),axis=1)
+            closestDistHorCircle = shortest_distance(np.asarray([state]), points)
+
+        if inVerCir1:
+            xp = xch1 + radius * np.cos(theta+pi)
+            yp = ych1 + radius * np.sin(theta+pi)
+            points = np.concatenate((xp,yp),axis=1)
+            closestDistVerCircle = shortest_distance(np.asarray([state]), points)
+
+        if inVerCir2:
+            xp = xch1 + radius * np.cos(theta)
+            yp = ych1 + radius * np.sin(theta)
+            points = np.concatenate((xp,yp),axis=1)
+            closestDistVerCircle = shortest_distance(np.asarray([state]), points)
+
+        if inHor and not inVer:
+            if inHorRec:
+                points = np.array([[x, ych1+radius], [x, ych1-radius]])
+                closestDist = shortest_distance(np.asarray([state]), points)
+            else:
+                closestDist = closestDistHorCircle
+        elif inHorRec and inVerRec:
+            points = np.array(  [[xcv1-radius, ych1-radius], 
+                                [xcv1-radius,ych1+radius],
+                                [xcv1+radius,ych1-radius],
+                                [xcv1+radius,ych2+radius]])
+            closestDist = shortest_distance(np.asarray([state]), points)
+        elif inHorRec and (inVerCir1 or inVerCir2):
+            points = np.array(  [[x, ych1+radius], 
+                                [x, ych1-radius]] )
+            closestDist = shortest_distance(np.asarray([state]), points)
+            closestDist = np.max(closestDist,closestDistVerCircle)
+
+        if inVer and not inHor:
+            if inVerRec:
+                points = np.array(  [[xcv1-radius,y], 
+                                    [xcv1+radius,y]] ) 
+                closestDist = shortest_distance(np.asarray([state]), points)
+            else:
+                closestDist = closestDistVerCircle
+        elif inVerRec and (inHorCir1 or inHorCir2):
+            points = np.array(  [[xcv1-radius,y], 
+                                [xcv1+radius,y]] )
+            closestDist = shortest_distance(np.asarray([state]), points)
+            closestDist = np.max(closestDist,closestDistHorCircle)
+        elif (inVerCir1 or inVerCir2) and (inHorCir1 or inHorCir2):
+            closestDist = np.max(closestDistHorCircle,closestDistVerCircle)
+
+        return closestDist
+
+
+    # def dist2edge(self, state):
+    #     state = np.asarray([state])
+    #     dist2edge = shortest_distance(state , self.puddle)
+    #     return dist2edge
 
     def update_state_env_reward(self, state, action):
         inc_state = state

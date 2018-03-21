@@ -1,6 +1,6 @@
 %function [weights,data,convergence] = sarsa_gridworld(task,functionApproximator,withBias,s_end,weights,data,nMeshx,nTilex,nMeshy,nTiley)
 clc, close all, clear all;
-withBias = false;
+withBias = true;
 
 nMeshx = 20; nMeshy = 20;
 nTilex = 1; nTiley = 1;
@@ -283,15 +283,15 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             % Update Neural Net
            switch functionApproximator,
                case 'kwtaNN',
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'allHiddenUnitsForwardButNoErrorForLosers'
                    [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'LosersForwardZeroButErrorForAll'
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'allHiddenUnitsForwardAndAllGetErrors'
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'allHiddenUnitsForwardAndAllGetErrorsShunt1'
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'regularBPNN',
                    [Wih,biasih,Who,biasho] = Update_regularBPNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'linearNN'
@@ -305,15 +305,15 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             delta = rew - Q(act);
             switch functionApproximator,
                case 'kwtaNN',
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'allHiddenUnitsForwardButNoErrorForLosers'
                    [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'LosersForwardZeroButErrorForAll'
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'allHiddenUnitsForwardAndAllGetErrors'
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'allHiddenUnitsForwardAndAllGetErrorsShunt1'
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'regularBPNN',
                    [Wih,biasih,Who,biasho] = Update_regularBPNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'linearNN'
