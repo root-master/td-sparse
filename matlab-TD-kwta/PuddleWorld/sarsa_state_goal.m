@@ -47,7 +47,7 @@ mu = 0.1; % amplitude of random weights
 Wio = mu * (rand(InputSize,nActions) - 0.5);
 biasio = mu * (rand(1,nActions) - 0.5 );
 
-alpha = 0.001;
+alpha = 0.005;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -59,7 +59,7 @@ epsilon = 0.1;  % epsilon greedy parameter
 
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
-maxIteratonEpisode = 2 * (nMeshx * nTilex + nMeshy * nTiley);
+maxIteratonEpisode = 4 * (nMeshx * nTilex + nMeshy * nTiley);
              
 %% Input of function approximator
 xgridInput = 1.0 / nMeshx;
@@ -79,7 +79,7 @@ yVector = 0:ygrid:1;
 nStates = length(xInputInterval) * length(yInputInterval);
 
 %% Different Max number of episodes
-maxNumEpisodes = 100 * nStates * nTilex * nTiley;
+maxNumEpisodes = 1000000;
 
 nGoodEpisodes = 0; % a variable for checking the convergence
 convergence = false;
@@ -93,6 +93,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
      deltaForStepsOfEpisode = [];
      % initialize the starting state - Continuous state
      s = initializeState(xVector,yVector);
+     s0 = s;
      g = initializeState(xVector,yVector);
      % Gaussian Distribution on continuous state
      sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
@@ -147,7 +148,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
             [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho);
             % stp1 is the terminal state ... no Q(s';a') term in the sarsa update
-            fprintf('Reaching to Goal at episode =%d at step = %d and mean(delta) = %f \n',ei,ts,mean(deltaForStepsOfEpisode));
+            fprintf('Success: episode = %d, s0 = (%g , %g), goal: (%g , %g), step = %d, mean(delta) = %f \n',ei,s0,g,ts,mean(deltaForStepsOfEpisode));
             break; 
         end
         % update (st,at) pair:
@@ -187,3 +188,4 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 
 end  % end episode loop
 
+save('weights.mat','Wih','biasih','Who','biasho')
