@@ -88,9 +88,14 @@ agentBumped2wall = false;
 %% Episode Loops
 ei = 1;
 
+save_episodes = [1,1000,5000,10000,20000,50000,100000:100000:1000000];
 
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
-     deltaForStepsOfEpisode = [];
+    if ismember(ei,save_episodes)
+        filename = ['./test_1/weights',int2str(ei),'.mat'];
+        save(filename,'Wih','biasih','Who','biasho');
+    end
+    deltaForStepsOfEpisode = [];
      % initialize the starting state - Continuous state
      s = initializeState(xVector,yVector);
      s0 = s;
@@ -165,14 +170,14 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     stdDeltaForEpisode(ei) = std(deltaForStepsOfEpisode);
     
     
-    if ( ei>500 && abs(meanDeltaForEpisode(ei))< 0.2 && agentReached2Goal ),
+    if ( ei>500 && abs(mean(meanDeltaForEpisode))< 0.2 && agentReached2Goal ),
             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
         epsilon = bound(epsilon * 0.999,[0.001,0.1]);
     else
         epsilon = bound(epsilon * 1.01,[0.001,0.1]);
     end
     
-    if ( abs(meanDeltaForEpisode(ei))<0.1 ) && agentReached2Goal,
+    if ( abs(mean(meanDeltaForEpisode))<0.1 ) && agentReached2Goal,
         nGoodEpisodes = nGoodEpisodes + 1;
     else
         nGoodEpisodes = 0;
@@ -192,4 +197,3 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 
 end  % end episode loop
 
-save('weights.mat','Wih','biasih','Who','biasho')
