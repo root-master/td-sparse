@@ -9,9 +9,8 @@
 #$ -pe smp 20
 #$ -V
 
-cd ~
-cd deeptd/matlab-TD-kwta/PuddleWorld
 alias matlab="/home/MATLAB/R2016b/bin/matlab"
+sleep 5
 matlab -nodisplay -nodesktop -r "run sarsa_state_goal.m"
 pause(10)
 quit
