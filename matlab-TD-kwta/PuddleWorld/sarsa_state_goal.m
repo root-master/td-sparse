@@ -94,7 +94,11 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
      % initialize the starting state - Continuous state
      s = initializeState(xVector,yVector);
      s0 = s;
-     g = initializeState(xVector,yVector);
+     goalinPuddle = true;
+     while (goalinPuddle),
+        g = initializeState(xVector,yVector);
+        [goalinPuddle,~] = CreatePuddle(g);
+     end
      % Gaussian Distribution on continuous state
      sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
      sy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,s(2),sigmay);
