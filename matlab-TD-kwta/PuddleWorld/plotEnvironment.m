@@ -14,6 +14,9 @@ set(gcf,'name','Puddle World Task')
 set(gco,'Units','uniform')
 axis([0 1.0 0 1.0]);
 hold on
+xlabel('$x$','Interpreter','latex')
+ylabel('$y$','Interpreter','latex')
+hold on
 for i=1:length(xVector),
     for j=1:length(yVector),
         x = xVector(i); y = yVector(j); s = [x,y];
