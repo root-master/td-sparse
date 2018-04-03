@@ -8,8 +8,8 @@ closestDist = 0;
 % 1) rectangle area xch1<= x <=xc2 && ych1-radius <= y <=ych2+radius
 % where (xchi,ychi) is the center points (h ==> horizantal)
 % 1 : left; 2 : right
-xch1 = 0.3; ych1=0.7;
-xch2 = 0.65; ych2 = ych1;
+xch1 = 0.3; ych1=0.6;
+xch2 = 0.6; ych2 = ych1;
 radius = 0.1;
 inHorRec = (x>=xch1) && (y>= ych1-radius) && (x<=xch2) && (y<=ych2+radius);    
 % 2) two half-circle at end edges of rectangle
@@ -22,7 +22,7 @@ inHor = inHorRec || inHorCir1 || inHorCir2;
 % where (xcvi,ycvi) is the center points (v ==> vertical)
 % 1 : left; 2 : right
 xcv1 = 0.45; ycv1=0.4;
-xcv2 = xcv1; ycv2 = 0.8;
+xcv2 = xcv1; ycv2 = 0.7;
 
 inVerRec = (x >= xcv1-radius) && (y >= ycv1) && (x <= xcv2+radius) && (y <= ycv2);    
 % 2) two half-circle at end edges of rectangle

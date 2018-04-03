@@ -22,7 +22,7 @@ xInputInterval = 0 : xgridInput : 1.0;
 yInputInterval = 0 : ygridInput : 1.0;
 
 % the number of states -- This is the gross mesh states ; the 1st tiling 
-nStates = length(xInputInterval) * length(yInputInterval); 
+nStates = ( length(xInputInterval) * length(yInputInterval) ); 
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -31,8 +31,8 @@ nActions = 4;
 
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
-InputSize = 2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = nStates; % 4 * round(0.5 * nStates);
+InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
+nCellHidden = 20*nStates;%round(0.5 * nStates); 
 mu = 0.1;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
@@ -47,7 +47,7 @@ mu = 0.1; % amplitude of random weights
 Wio = mu * (rand(InputSize,nActions) - 0.5);
 biasio = mu * (rand(1,nActions) - 0.5 );
 
-alpha = 0.005;
+alpha = 0.0005;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -56,6 +56,7 @@ nActions = 4;
 
 gamma = 0.99;    % discounted task 
 epsilon = 0.1;  % epsilon greedy parameter
+epsilon_max = 0.1;
 
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
@@ -87,13 +88,14 @@ agentReached2Goal = false;
 agentBumped2wall = false;
 %% Episode Loops
 ei = 0;
-
+delta_sum = [];
 save_episodes = 0:1000:1000000;
-
+total_num_steps = 0;
+g = [1,1]; % just initalization --> it's gonna change
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
     if ismember(ei,save_episodes)
-        filename = ['./test_nh_884/weights',int2str(ei),'.mat'];
-        save(filename,'Wih','biasih','Who','biasho');
+        filename = ['./results/weights',int2str(ei),'.mat'];
+        %save(filename,'Wih','biasih','Who','biasho');
     end
     ei = ei + 1;
     
@@ -153,11 +155,11 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
            
             % Update Neural Net
-            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho);
+            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
         else
             delta = rew - Q(act);
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
-            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho);
+            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
             % stp1 is the terminal state ... no Q(s';a') term in the sarsa update
             fprintf('Success: episode = %d, s0 = (%g , %g), goal: (%g , %g), step = %d, mean(delta) = %f \n',ei,s0,g,ts,mean(deltaForStepsOfEpisode));
             break; 
@@ -167,28 +169,31 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         Q = Qp1;    
         ts = ts + 1;
     end % while loop
+    %epsilon = epsilon_max/ei;
+    total_num_steps = total_num_steps + ts;
     meanDeltaForEpisode(ei) = mean(deltaForStepsOfEpisode);
+    delta_sum(ei) = sum(deltaForStepsOfEpisode);
     varianceDeltaForEpisode(ei) =var(deltaForStepsOfEpisode);
     stdDeltaForEpisode(ei) = std(deltaForStepsOfEpisode);
     
     
-    if ( ei>500 && abs(mean(meanDeltaForEpisode))< 0.2 && agentReached2Goal ),
-            %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
-        epsilon = bound(epsilon * 0.999,[0.001,0.1]);
-    else
-        epsilon = bound(epsilon * 1.01,[0.001,0.1]);
-    end
-    
-    if ( abs(mean(meanDeltaForEpisode))<0.1 ) && agentReached2Goal,
-        nGoodEpisodes = nGoodEpisodes + 1;
-    else
-        nGoodEpisodes = 0;
-    end
-    
-    if  abs(mean(deltaForStepsOfEpisode))<0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
-        convergence = true;
-        fprintf('Convergence at episode: %d \n',ei);
-    end
+%     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
+%             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
+%         epsilon = bound(epsilon * 0.99,[0.001,0.1]);
+%     else
+%         epsilon = bound(epsilon * 1.01,[0.001,0.1]);
+%     end
+%     
+%     if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
+%         nGoodEpisodes = nGoodEpisodes + 1;
+%     else
+%         nGoodEpisodes = 0;
+%     end
+%     
+%     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
+%         convergence = true;
+%         fprintf('Convergence at episode: %d \n',ei);
+%     end
     
     
 %     plot(meanDeltaForEpisode)      
