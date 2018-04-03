@@ -1,0 +1,6 @@
+/act/sge/default/spool/mrcd02/job_scripts/297468: line 15: matlab: command not found
+/act/sge/default/spool/mrcd02/job_scripts/297468: line 16: syntax error near unexpected token `10'
+/act/sge/default/spool/mrcd02/job_scripts/297468: line 16: `pause(10)'
+/act/sge/default/spool/mrcd02/job_scripts/297469: line 14: matlab: command not found
+/act/sge/default/spool/mrcd02/job_scripts/297469: line 15: syntax error near unexpected token `10'
+/act/sge/default/spool/mrcd02/job_scripts/297469: line 15: `pause(10)'
