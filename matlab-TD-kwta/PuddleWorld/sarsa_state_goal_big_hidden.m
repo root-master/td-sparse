@@ -32,7 +32,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize = 2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 4 * round(0.5 * nStates);
+nCellHidden = nStates; % 4 * round(0.5 * nStates);
 mu = 0.1;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
@@ -197,4 +197,3 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     
 
 end  % end episode loop
-
