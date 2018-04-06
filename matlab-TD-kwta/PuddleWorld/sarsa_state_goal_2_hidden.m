@@ -32,19 +32,22 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 2 * nStates; %3*round(0.5 * nStates); 
-mu = 0.01;
-Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
-biasih = mu * ( rand(1,nCellHidden) - 0.5 );
-% Weights from hidden layer to output
-Who = mu * (rand(nCellHidden,nActions) - 0.5);
-biasho = mu * ( rand(1,nActions) - 0.5 );
-%% Linear Neural Net
-mu = 0.1; % amplitude of random weights
-Wio = mu * (rand(InputSize,nActions) - 0.5);
-biasio = mu * (rand(1,nActions) - 0.5 );
+nCellHidden1 = 2 * nStates;
+nCellHidden2 = round(0.5 * nStates);
 
-alpha = 0.002;
+mu = 0.01;
+Wih = mu * (rand(InputSize,nCellHidden1) - 0.5);
+biasih = mu * ( rand(1,nCellHidden1) - 0.5 );
+
+Wh1h2 = mu * (rand(nCellHidden1,nCellHidden2) - 0.5);
+biash1h2 = mu * ( rand(1,nCellHidden2) - 0.5 );
+
+
+% Weights from hidden layer to output
+Who = mu * (rand(nCellHidden2,nActions) - 0.5);
+biasho = mu * ( rand(1,nActions) - 0.5 );
+
+alpha = 0.001;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -115,7 +118,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
           
      % initializing time
      ts = 1;
-     [Q,h,id] = kwta_NN_forward_new(st,Wih,biasih,Who,biasho);
+     [Q,h_1,h_1_id,h_2,h_2_id] = kwta_NN_forward_2_layer(st, Wih,biasih, Wh1h2,biash1h2, Who,biasho);
      act = e_greedy_policy(Q,nActions,epsilon);
 
     %% Episode While Loop
@@ -141,7 +144,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         
         % reward/punishment from Environment
         rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall,nTilex,nTiley);
-        [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,Wih,biasih,Who,biasho);
+        [Qp1,hp1_1,hp1_1_id,hp1_2,hp1_2_id] = kwta_NN_forward_2_layer(st, Wih,biasih, Wh1h2,biash1h2, Who,biasho);
         
         % make the greedy action selection in st+1: 
         actp1 = e_greedy_policy(Qp1,nActions,epsilon);
@@ -152,17 +155,18 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
            
             % Update Neural Net
-            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
+            [ Wih,biasih,Wh1h2,biash1h2,Who,biasho] = Update_kwtaNN_2_layer(st,act,h_1,h_1_id,h_2,h_2_id,alpha,delta,Wih,biasih, Wh1h2,biash1h2, Who,biasho);
         else
             delta = rew - Q(act);
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
-            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
+            [ Wih,biasih,Wh1h2,biash1h2,Who,biasho] = Update_kwtaNN_2_layer(st,act,h_1,h_1_id,h_2,h_2_id,alpha,delta,Wih,biasih, Wh1h2,biash1h2, Who,biasho);            
             % stp1 is the terminal state ... no Q(s';a') term in the sarsa update
             fprintf('Success: episode = %d, s0 = (%g , %g), goal: (%g , %g), step = %d, mean(delta) = %f \n',ei,s0,g,ts,mean(deltaForStepsOfEpisode));
             break; 
         end
         % update (st,at) pair:
-        st = stp1;  s = sp1; act = actp1; id = idp1; h = hp1; 
+        st = stp1;  s = sp1; act = actp1; h_1_id = hp1_1_id; h_1 = hp1_1;
+        h_2 = hp1_2; h_2_id = hp1_2_id;
         Q = Qp1;    
         ts = ts + 1;
     end % while loop
