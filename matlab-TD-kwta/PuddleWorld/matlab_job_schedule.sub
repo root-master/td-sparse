@@ -14,4 +14,4 @@ alias matlab="/home/MATLAB/R2016b/bin/matlab"
 sleep 5
 cd ~/deeptd/matlab-TD-kwta/PuddleWorld
 sleep 2
-matlab -nodisplay -nodesktop -r "run sarsa_state_goal.m"; pause(10); quit
+matlab -nodisplay -nodesktop -r "run sarsa_state_goal_big_hidden.m"; pause(10); quit

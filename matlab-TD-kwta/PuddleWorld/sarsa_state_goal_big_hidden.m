@@ -32,7 +32,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 10 * nStates;%round(0.5 * nStates); 
+nCellHidden = nStates;%round(0.5 * nStates); 
 mu = 0.5;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
@@ -44,7 +44,7 @@ mu = 0.1; % amplitude of random weights
 Wio = mu * (rand(InputSize,nActions) - 0.5);
 biasio = mu * (rand(1,nActions) - 0.5 );
 
-alpha = 0.003;
+alpha = 0.005;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]

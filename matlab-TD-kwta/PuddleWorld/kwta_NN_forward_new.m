@@ -3,7 +3,7 @@ function [o,h,id]  = kwta_NN_forward_new(s,shunt, Wih,biasih, Who,biasho)
 
 nCellHidden = length(Wih);
 
-k = round(0.1 * nCellHidden); % number of winners
+k = round(0.05 * nCellHidden); % number of winners
 
 % net = zeros(nCellHidden,1);
 
