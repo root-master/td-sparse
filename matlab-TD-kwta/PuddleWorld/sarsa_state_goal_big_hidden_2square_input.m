@@ -2,15 +2,6 @@ clc, close all, clear all;
 withBias = 1;
 
 nMeshx = 20; nMeshy = 20;
-nTilex = 1; nTiley = 1;
-
-functionApproximator = 'kwtaNN';
-shunt = 1.0;
-
-% control task could be 'grid_world' or 'puddle_world'
-task = 'puddle_world';
-% function approximator can be either 'kwtaNN' or 'regularBPNN'
-
 
 % goal in continouos state
 % g is goal and it is dynamic this time
@@ -30,21 +21,23 @@ nStates = ( length(xInputInterval) * length(yInputInterval) );
 nActions = 4; 
 
 %% kwta and regular BP Neural Network
-% Weights from input (x,y,x_goal,y_goal) to hidden layer
-InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 100 * nStates;%round(0.5 * nStates); 
-mu = 0.1;
-Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
-biasih = mu * ( rand(1,nCellHidden) - 0.5 );
-% Weights from hidden layer to output
-Who = mu * (rand(nCellHidden,nActions) - 0.5);
-biasho = mu * ( rand(1,nActions) - 0.5 );
-%% Linear Neural Net
-mu = 0.1; % amplitude of random weights
-Wio = mu * (rand(InputSize,nActions) - 0.5);
-biasio = mu * (rand(1,nActions) - 0.5 );
+% Weights from input (s_sq, g_sq) to hidden layer
+% s_sq: square representation of s
+% g_sq: square representation of g
+s_sq_dim = [length(xInputInterval), length(yInputInterval)];
+q_sq_dim = [length(xInputInterval), length(yInputInterval)];
 
-alpha = 0.001;
+n_h_1_dim = [41, 41];
+
+n_o_dim = [4,1];
+
+%%%%%%%%%%%% INIT WEIGHTS %%%%%%%%%%%%
+mu = 0.1;
+W_s_h_1 = 
+
+
+
+alpha = 0.003;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -92,7 +85,7 @@ g = [1,1]; % just initalization --> it's gonna change
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
     if ismember(ei,save_episodes)
         filename = ['./results/weights',int2str(ei),'.mat'];
-        %save(filename,'Wih','biasih','Who','biasho');
+        save(filename,'Wih','biasih','Who','biasho');
     end
     ei = ei + 1;
     
@@ -115,7 +108,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
           
      % initializing time
      ts = 1;
-     [Q,h,id] = kwta_NN_forward_radical(st,Wih,biasih,Who,biasho);
+     [Q,h,id] = kwta_NN_forward_new(st,shunt,Wih,biasih,Who,biasho);
      act = e_greedy_policy(Q,nActions,epsilon);
 
     %% Episode While Loop
@@ -141,7 +134,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         
         % reward/punishment from Environment
         rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall,nTilex,nTiley);
-        [Qp1,hp1,idp1] = kwta_NN_forward_radical(stp1,Wih,biasih,Who,biasho);
+        [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,shunt,Wih,biasih,Who,biasho);
         
         % make the greedy action selection in st+1: 
         actp1 = e_greedy_policy(Qp1,nActions,epsilon);

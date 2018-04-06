@@ -1,4 +1,4 @@
- function [ Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho)
+ function [ Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,h_id,alpha,delta,Wih,biasih,Who,biasho)
 % Update_kwtaNN update the weigths of kwta neural net
 % st: previous state before taking action (act)
 % Q : output for st
@@ -15,11 +15,11 @@ error = - delta;
 % Wih = Wih - alpha * st' * deltaj;
 % biasih = biasih - alpha * deltaj;
 
-deltaj = (error * Who(:,act))' .* (1-h) .* h; 
-Who(:,act) = Who(:,act) - alpha * error * h';
-biasho(act) = biasho(act) - alpha * error;
-Wih = Wih - alpha * st' * deltaj;
-biasih = biasih - alpha * deltaj;
+% deltaj = (error * Who(:,act))' .* (1-h) .* h; 
+% Who(:,act) = Who(:,act) - alpha * error * h';
+% biasho(act) = biasho(act) - alpha * error;
+% Wih = Wih - alpha * st' * deltaj;
+% biasih = biasih - alpha * deltaj;
 
 % deltaj = zeros(1,length(h));
 % deltaj(id) = (- delta * Who(id,act))' .* (1-h(id)) .* h((id)); 
@@ -27,3 +27,14 @@ biasih = biasih - alpha * deltaj;
 % biasho(act) = biasho(act) + alpha * delta;
 % Wih(:,id) = Wih(:,id) - alpha * st' * deltaj(id);
 % biasih(id) = biasih(id) - alpha * deltaj(id);
+
+st_id = st > 0.2;
+deltaj = zeros(1,length(h));
+deltaj(h_id) = (- delta * Who(h_id,act))' .* (1-h(h_id)) .* h((h_id)); 
+Who(h_id,act) = Who(h_id,act) + alpha * delta * h(h_id)';
+biasho(act) = biasho(act) + alpha * delta;
+Wih(st_id,h_id) = Wih(st_id,h_id) - alpha * st(st_id)' * deltaj(h_id);
+biasih(h_id) = biasih(h_id) - alpha * deltaj(h_id);
+
+
+
