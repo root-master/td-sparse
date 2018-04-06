@@ -25,6 +25,7 @@ eta = net - biaskwta - shunt; % shunt is a positive number which is the shift to
 h_1 = 1./(1 + exp(-eta) );
 
 %%%%%%%% LAYER 2 %%%%%%%
+
 nCellHidden2 = length(Wh1h2);
 k = round(0.1 * nCellHidden2); % number of winners
 

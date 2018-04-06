@@ -4,7 +4,7 @@ shunt = 1;
 
 nCellHidden = length(Wih);
 
-k = round(0.04 * nCellHidden); % number of winners
+k = round(0.07 * nCellHidden); % number of winners
 
 % net = zeros(nCellHidden,1);
 

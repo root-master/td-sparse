@@ -32,19 +32,15 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 2 * nStates; %3*round(0.5 * nStates); 
-mu = 0.01;
+nCellHidden = nStates; %3*round(0.5 * nStates); 
+mu = 0.02;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
 % Weights from hidden layer to output
 Who = mu * (rand(nCellHidden,nActions) - 0.5);
 biasho = mu * ( rand(1,nActions) - 0.5 );
-%% Linear Neural Net
-mu = 0.1; % amplitude of random weights
-Wio = mu * (rand(InputSize,nActions) - 0.5);
-biasio = mu * (rand(1,nActions) - 0.5 );
 
-alpha = 0.002;
+alpha = 0.0001;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -52,8 +48,8 @@ alpha = 0.002;
 nActions = 4; 
 
 gamma = 0.99;    % discounted task 
-epsilon = 0.1;  % epsilon greedy parameter
-epsilon_max = 0.1;
+epsilon = 0.01;  % epsilon greedy parameter
+epsilon_max = 0.01;
 
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
