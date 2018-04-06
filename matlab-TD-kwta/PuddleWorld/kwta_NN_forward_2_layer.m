@@ -4,7 +4,7 @@ shunt = 1;
 
 nCellHidden = length(Wih);
 
-k = round(0.05 * nCellHidden); % number of winners
+k = round(0.1 * nCellHidden); % number of winners
 
 % net = zeros(nCellHidden,1);
 
@@ -26,7 +26,7 @@ h_1 = 1./(1 + exp(-eta) );
 
 %%%%%%%% LAYER 2 %%%%%%%
 nCellHidden2 = length(Wh1h2);
-k = round(0.15 * nCellHidden2); % number of winners
+k = round(0.1 * nCellHidden2); % number of winners
 
 net = h_1 * Wh1h2 + biash1h2;
 [netSorted,idsort] = sort(net,'descend');

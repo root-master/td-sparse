@@ -35,7 +35,7 @@ InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
 nCellHidden1 = 2 * nStates;
 nCellHidden2 = round(0.5 * nStates);
 
-mu = 0.01;
+mu = 0.001;
 Wih = mu * (rand(InputSize,nCellHidden1) - 0.5);
 biasih = mu * ( rand(1,nCellHidden1) - 0.5 );
 
@@ -47,7 +47,7 @@ biash1h2 = mu * ( rand(1,nCellHidden2) - 0.5 );
 Who = mu * (rand(nCellHidden2,nActions) - 0.5);
 biasho = mu * ( rand(1,nActions) - 0.5 );
 
-alpha = 0.001;
+alpha = 0.0005;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
