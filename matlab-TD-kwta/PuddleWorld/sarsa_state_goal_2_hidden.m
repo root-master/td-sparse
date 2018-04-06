@@ -32,7 +32,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden1 = 2 * nStates;
+nCellHidden1 = nStates;
 nCellHidden2 = round(0.5 * nStates);
 
 mu = 0.01;
