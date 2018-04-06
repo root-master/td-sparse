@@ -44,7 +44,7 @@ mu = 0.1; % amplitude of random weights
 Wio = mu * (rand(InputSize,nActions) - 0.5);
 biasio = mu * (rand(1,nActions) - 0.5 );
 
-alpha = 0.005;
+alpha = 0.003;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -92,7 +92,7 @@ g = [1,1]; % just initalization --> it's gonna change
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
     if ismember(ei,save_episodes)
         filename = ['./results/weights',int2str(ei),'.mat'];
-        %save(filename,'Wih','biasih','Who','biasho');
+        save(filename,'Wih','biasih','Who','biasho');
     end
     ei = ei + 1;
     
@@ -174,23 +174,23 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     stdDeltaForEpisode(ei) = std(deltaForStepsOfEpisode);
     
     
-%     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
-%             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
-%         epsilon = bound(epsilon * 0.99,[0.001,0.1]);
-%     else
-%         epsilon = bound(epsilon * 1.01,[0.001,0.1]);
-%     end
-%     
-%     if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
-%         nGoodEpisodes = nGoodEpisodes + 1;
-%     else
-%         nGoodEpisodes = 0;
-%     end
-%     
-%     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
-%         convergence = true;
-%         fprintf('Convergence at episode: %d \n',ei);
-%     end
+    if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
+            %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
+        epsilon = bound(epsilon * 0.99,[0.001,0.1]);
+    else
+        epsilon = bound(epsilon * 1.01,[0.001,0.1]);
+    end
+    
+    if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
+        nGoodEpisodes = nGoodEpisodes + 1;
+    else
+        nGoodEpisodes = 0;
+    end
+    
+    if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
+        convergence = true;
+        fprintf('Convergence at episode: %d \n',ei);
+    end
     
     
 %     plot(meanDeltaForEpisode)      
