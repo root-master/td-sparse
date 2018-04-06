@@ -31,7 +31,7 @@ while keyinPuddle
     key = initializeState(xInputInterval,yInputInterval);
     [keyinPuddle,~] = CreatePuddle(key);
 end
-fprintf('key = %g %g \n',key);
+printf('key = %g %g \n',key);
 
 doorinPuddle = true;
 while doorinPuddle
@@ -43,8 +43,7 @@ fprintf('door = %g %g \n',door);
 
 for x=xInputInterval,
     for y=yInputInterval,
-        x = 0.2;
-        y = 0.1;
+        
         agentReached2Key = false;
         agentReached2Door = false;
         t = 1;
@@ -54,13 +53,13 @@ for x=xInputInterval,
         s=[x,y];
         [agentinPuddle,~] = CreatePuddle(s);
         if agentinPuddle
-            %continue
+            continue
         end
         
         g = key;
         fprintf('s0 = %g %g and goal = %g %g \n',s,g);
         while(t<=max_iter)
-            fprintf('s = %g %g \n',s);
+            
             if success(s,key) && ~first_time_visit_key
                 agentReached2Key = true;
                 scores = scores + 10;
@@ -105,3 +104,4 @@ for x=xInputInterval,
         total_episodes = total_episodes + 1;
     end
 end
+
