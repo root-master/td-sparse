@@ -35,7 +35,7 @@ InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
 nCellHidden1 = 2 * nStates;
 nCellHidden2 = round(0.5 * nStates);
 
-mu = 0.001;
+mu = 0.1;
 Wih = mu * (rand(InputSize,nCellHidden1) - 0.5);
 biasih = mu * ( rand(1,nCellHidden1) - 0.5 );
 
