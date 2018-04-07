@@ -1,7 +1,7 @@
 clc, close all, clear all;
 withBias = 1;
 
-nMeshx = 20; nMeshy = 20;
+nMeshx = 10; nMeshy = 10;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';
@@ -32,15 +32,15 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = nStates; %3*round(0.5 * nStates); 
-mu = 0.02;
+nCellHidden = 2*nStates; 
+mu = 0.1;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
 % Weights from hidden layer to output
 Who = mu * (rand(nCellHidden,nActions) - 0.5);
 biasho = mu * ( rand(1,nActions) - 0.5 );
 
-alpha = 0.0001;
+alpha = 0.005;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -48,12 +48,12 @@ alpha = 0.0001;
 nActions = 4; 
 
 gamma = 0.99;    % discounted task 
-epsilon = 0.01;  % epsilon greedy parameter
-epsilon_max = 0.01;
+epsilon = 0.05;  % epsilon greedy parameter
+epsilon_max = 0.05;
 
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
-maxIteratonEpisode = 4 * (nMeshx * nTilex + nMeshy * nTiley);
+maxIteratonEpisode = 2 * (nMeshx * nTilex + nMeshy * nTiley);
              
 %% Input of function approximator
 xgridInput = 1.0 / nMeshx;
@@ -172,9 +172,9 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     
     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
-        epsilon = bound(epsilon * 0.99,[0.001,0.1]);
+        epsilon = bound(epsilon * 0.99,[0.001,epsilon_max]);
     else
-        epsilon = bound(epsilon * 1.01,[0.001,0.1]);
+        epsilon = bound(epsilon * 1.01,[0.001,epsilon_max]);
     end
     
     if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,

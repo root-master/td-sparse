@@ -55,8 +55,8 @@ alpha = 0.0001;
 nActions = 4; 
 
 gamma = 0.99;    % discounted task 
-epsilon = 0.02;  % epsilon greedy parameter
-epsilon_max = 0.02;
+epsilon_max = 0.05;
+epsilon = epsilon_max;  % epsilon greedy parameter
 
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
@@ -177,24 +177,25 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     varianceDeltaForEpisode(ei) =var(deltaForStepsOfEpisode);
     stdDeltaForEpisode(ei) = std(deltaForStepsOfEpisode);
     
-    
-    if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
-            %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
-        epsilon = bound(epsilon * 0.99,[0.001,0.1]);
-    else
-        epsilon = bound(epsilon * 1.01,[0.001,0.1]);
-    end
-    
-    if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
-        nGoodEpisodes = nGoodEpisodes + 1;
-    else
-        nGoodEpisodes = 0;
-    end
-    
-    if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
-        convergence = true;
-        fprintf('Convergence at episode: %d \n',ei);
-    end
+    epsilon = epsilon * 0.9999;
+    alpha = alpha * 0.99999;
+%     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
+%             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
+%         epsilon = bound(epsilon * 0.99,[0.001,epsilon_max]);
+%     else
+%         epsilon = bound(epsilon * 1.01,[0.001,epsilon_max]);
+%     end
+%     
+%     if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
+%         nGoodEpisodes = nGoodEpisodes + 1;
+%     else
+%         nGoodEpisodes = 0;
+%     end
+%     
+%     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
+%         convergence = true;
+%         fprintf('Convergence at episode: %d \n',ei);
+%     end
     
     
 %     plot(meanDeltaForEpisode)      

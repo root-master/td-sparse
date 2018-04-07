@@ -3,7 +3,7 @@ function [o,h,id]  = kwta_NN_forward_new(s, Wih,biasih, Who,biasho)
 shunt = 1;
 nCellHidden = length(Wih);
 
-k = round(0.1 * nCellHidden); % number of winners
+k = round(0.05 * nCellHidden); % number of winners
 
 % net = zeros(nCellHidden,1);
 
@@ -22,7 +22,9 @@ eta = net - biaskwta - shunt; % shunt is a positive number which is the shift to
 
 % hidden activation
 
-h = 1./(1 + exp(-eta) );
+%h = 1./(1 + exp(-eta) );
+h = zeros(size(eta));
+h(id) = 1./(1 + exp(-eta(id)) );
 
 o = h * Who + biasho; % Output
 
