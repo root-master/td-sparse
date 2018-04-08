@@ -1,6 +1,6 @@
 function [successful_key_door_episodes, successful_key_episodes, scores_vec, total_episodes] = test_score_success_func(Wih, biasih, Who, biasho)
 
-nMeshx = 20; nMeshy = 20;
+nMeshx = 10; nMeshy = 10;
 
 successful_key_door_episodes = [];
 successful_key_episodes = [];

@@ -1,7 +1,7 @@
 clc, close all, clear all;
 withBias = 1;
 
-nMeshx = 20; nMeshy = 20;
+nMeshx = 10; nMeshy = 10;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';
@@ -33,7 +33,7 @@ nActions = 4;
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
 nCellHidden = 200 * InputSize;%2*nStates; 
-mu = 0.1;
+mu = 0.01;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
 % Weights from hidden layer to output
