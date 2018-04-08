@@ -4,7 +4,9 @@ shunt = 1;
 
 nCellHidden = length(Wih);
 
-k = round(0.05 * nCellHidden); % number of winners
+k_rate = 0.1;
+
+k = round(k_rate* nCellHidden); % number of winners
 
 % net = zeros(nCellHidden,1);
 
@@ -22,9 +24,9 @@ id = idsort(1:k);
 eta = net - biaskwta - shunt; % shunt is a positive number which is the shift to left in activation-eta
 
 % hidden activation
-h = zeros(size(eta));
-h(id) = 1./(1 + exp(-eta(id)) );
-%h = 1./(1 + exp(-eta) );
+% h = zeros(size(eta));
+% h(id) = 1./(1 + exp(-eta(id)) );
+h = 1./(1 + exp(-eta) );
 
 o = h * Who + biasho; % Output
 

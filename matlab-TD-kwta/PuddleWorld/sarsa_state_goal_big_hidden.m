@@ -1,7 +1,7 @@
 clc, close all, clear all;
 withBias = 1;
 
-nMeshx = 10; nMeshy = 10;
+nMeshx = 20; nMeshy = 20;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';
@@ -32,7 +32,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 2*nStates; 
+nCellHidden = 200 * InputSize;%2*nStates; 
 mu = 0.1;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
@@ -40,17 +40,20 @@ biasih = mu * ( rand(1,nCellHidden) - 0.5 );
 Who = mu * (rand(nCellHidden,nActions) - 0.5);
 biasho = mu * ( rand(1,nActions) - 0.5 );
 
-alpha = 0.005;
-
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
 % (except on edges where this action is reduced): 
 nActions = 4; 
 
 gamma = 0.99;    % discounted task 
-epsilon = 0.05;  % epsilon greedy parameter
 epsilon_max = 0.05;
+epsilon_min = 0.0001;
+epsilon = epsilon_max;  % epsilon greedy parameter
 
+
+alpha_min = 0.00001;
+alpha_max = 0.0001;
+alpha = alpha_max;
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
 maxIteratonEpisode = 2 * (nMeshx * nTilex + nMeshy * nTiley);
@@ -84,23 +87,30 @@ ei = 0;
 delta_sum = [];
 save_episodes = 0:1000:1000000;
 total_num_steps = 0;
-g = [1,1]; % just initalization --> it's gonna change
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
     if ismember(ei,save_episodes)
         filename = ['./results/weights',int2str(ei),'.mat'];
         %save(filename,'Wih','biasih','Who','biasho');
     end
-    ei = ei + 1;
     
-    deltaForStepsOfEpisode = [];
-     % initialize the starting state - Continuous state
-     s = initializeState(xVector,yVector);
-     s0 = s;
+    if mod(ei,1000)==0
+        [successful_key_door_episodes, successful_key_episodes, scores_vec, total_episodes] = test_score_success_func(Wih, biasih, Who, biasho);
+        fprintf('average success: %.4f \n',length(successful_key_episodes)/total_episodes);
+        pause(5)
+    end
+    
      goalinPuddle = true;
      while (goalinPuddle),
         g = initializeState(xVector,yVector);
         [goalinPuddle,~] = CreatePuddle(g);
      end
+
+    
+    ei = ei + 1;
+    deltaForStepsOfEpisode = [];
+     % initialize the starting state - Continuous state
+     s = initializeState(xVector,yVector);
+     s0 = s;
      % Gaussian Distribution on continuous state
      sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
      sy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,s(2),sigmay);
@@ -136,7 +146,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         end
         
         % reward/punishment from Environment
-        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall,nTilex,nTiley);
+        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall);
         [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,Wih,biasih,Who,biasho);
         
         % make the greedy action selection in st+1: 
@@ -168,26 +178,36 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     delta_sum(ei) = sum(deltaForStepsOfEpisode);
     varianceDeltaForEpisode(ei) =var(deltaForStepsOfEpisode);
     stdDeltaForEpisode(ei) = std(deltaForStepsOfEpisode);
-    
-    
-    if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
-            %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
-        epsilon = bound(epsilon * 0.99,[0.001,epsilon_max]);
+
+    %% Exploration vs. Exploitation    
+    if agentReached2Goal,
+        alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
+        epsilon = bound(epsilon * 0.99,[epsilon_min,epsilon_max]);
     else
-        epsilon = bound(epsilon * 1.01,[0.001,epsilon_max]);
+        epsilon = bound(epsilon * 1.01,[epsilon_min,epsilon_max]);
+        alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
     end
+
     
-    if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
-        nGoodEpisodes = nGoodEpisodes + 1;
-    else
-        nGoodEpisodes = 0;
-    end
-    
-    if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
-        convergence = true;
-        fprintf('Convergence at episode: %d \n',ei);
-    end
-    
+%     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
+%             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
+%         epsilon = bound(epsilon * 0.99,[0.001,epsilon_max]);
+%     else
+%         epsilon = bound(epsilon * 1.01,[0.001,epsilon_max]);
+%     end
+%     
+%     if abs(sum(delta_sum) ) / total_num_steps< 0.1 && agentReached2Goal,
+%         nGoodEpisodes = nGoodEpisodes + 1;
+%     else
+%         nGoodEpisodes = 0;
+%     end
+%     
+%     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
+%         convergence = true;
+%         fprintf('Convergence at episode: %d \n',ei);
+%     end
+
+
     
 %     plot(meanDeltaForEpisode)      
 %     title(['Episode: ',int2str(ei),' epsilon: ',num2str(epsilon)])    

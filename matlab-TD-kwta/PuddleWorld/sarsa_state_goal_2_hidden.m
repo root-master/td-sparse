@@ -1,7 +1,7 @@
 clc, close all, clear all;
 withBias = 1;
 
-nMeshx = 20; nMeshy = 20;
+nMeshx = 10; nMeshy = 10;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';
@@ -33,9 +33,9 @@ nActions = 4;
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
 nCellHidden1 = nStates;
-nCellHidden2 = round(0.5 * nStates);
+nCellHidden2 = round(0.5 * nStates);%nStates;
 
-mu = 0.01;
+mu = 0.001;
 Wih = mu * (rand(InputSize,nCellHidden1) - 0.5);
 biasih = mu * ( rand(1,nCellHidden1) - 0.5 );
 
@@ -47,7 +47,7 @@ biash1h2 = mu * ( rand(1,nCellHidden2) - 0.5 );
 Who = mu * (rand(nCellHidden2,nActions) - 0.5);
 biasho = mu * ( rand(1,nActions) - 0.5 );
 
-alpha = 0.0001;
+alpha = 0.00001;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -55,7 +55,7 @@ alpha = 0.0001;
 nActions = 4; 
 
 gamma = 0.99;    % discounted task 
-epsilon_max = 0.05;
+epsilon_max = 0.2;
 epsilon = epsilon_max;  % epsilon greedy parameter
 
 % Max number of iteration in ach episde to break the loop if AGENT
@@ -176,9 +176,8 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     delta_sum(ei) = sum(deltaForStepsOfEpisode);
     varianceDeltaForEpisode(ei) =var(deltaForStepsOfEpisode);
     stdDeltaForEpisode(ei) = std(deltaForStepsOfEpisode);
+    epsilon = bound(epsilon * 0.9999,[0.001,epsilon_max]);
     
-    epsilon = epsilon * 0.9999;
-    alpha = alpha * 0.99999;
 %     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
 %             %&& abs(meanDeltaForEpisode(ei))<abs(meanDeltaForEpisode(ei-1) ) ),
 %         epsilon = bound(epsilon * 0.99,[0.001,epsilon_max]);
@@ -191,11 +190,11 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 %     else
 %         nGoodEpisodes = 0;
 %     end
-%     
-%     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
-%         convergence = true;
-%         fprintf('Convergence at episode: %d \n',ei);
-%     end
+    
+    if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
+        convergence = true;
+        fprintf('Convergence at episode: %d \n',ei);
+    end
     
     
 %     plot(meanDeltaForEpisode)      

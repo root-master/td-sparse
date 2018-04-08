@@ -3,7 +3,7 @@ function [o,h,id]  = kwta_NN_forward(s, Wih,biasih, Who,biasho)
 
 nCellHidden = length(Wih);
 
-k = round(0.1 * nCellHidden); % number of winners
+k = round(0.05 * nCellHidden); % number of winners
 
 % propagate Gaussian input state vector to hidden units
 net = s * Wih + biasih;

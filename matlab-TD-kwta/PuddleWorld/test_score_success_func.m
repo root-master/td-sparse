@@ -1,6 +1,6 @@
-function [successful_key_door_episodes, successful_key_episodes, scores_vec, total_episodes] = test_score_success_func(ep,Wih, biasih, Who, biasho)
+function [successful_key_door_episodes, successful_key_episodes, scores_vec, total_episodes] = test_score_success_func(Wih, biasih, Who, biasho)
 
-nMeshx = 10; nMeshy = 10;
+nMeshx = 20; nMeshy = 20;
 
 successful_key_door_episodes = [];
 successful_key_episodes = [];
@@ -18,7 +18,7 @@ sigmax = 1.0 / nMeshx;
 sigmay = 1.0 / nMeshy;
 
 ep_id = 1;
-max_iter = 1000;
+max_iter = 100;
 total_episodes = 0;
 
 keyinPuddle = true;
@@ -80,7 +80,12 @@ for x=xInputInterval,
              Q = kwta_NN_forward_new(st, Wih, biasih, Who, biasho);
              [~,a] = max(Q);
              sp1 = UPDATE_STATE(s,a,xgrid,xInputInterval,ygrid,yInputInterval);
-             rew = ENV_REWARD(sp1);
+             [agent_in_puddle,dist_2_edge] = CreatePuddle(sp1);
+             if agent_in_puddle
+                 rew = min(-1,-400*dist_2_edge);
+             else
+                 rew = 0;
+             end
              scores = scores + rew;
              
              s = sp1;

@@ -1,7 +1,6 @@
-function rew = ENV_REWARD(s,agentReached2Goal,agentBumped2wall,numTilex,numTiley)
+function rew = ENV_REWARD(s,agentReached2Goal,agentBumped2wall)
 % convert to row/column notation: 
 [agentinPuddle,dist2Edge] = CreatePuddle(s);
-numTiles = max(numTilex,numTiley);
 if agentReached2Goal,
     rew = 0;
 elseif agentinPuddle,
@@ -11,4 +10,3 @@ elseif agentBumped2wall,
 else
     rew = -1;
 end
-rew = rew / numTiles;
