@@ -5,7 +5,7 @@ shunt = 1;
 nsh = length(Wsh);
 ngh = length(Wgh);
 
-k1 = 0.05;
+k1 = 0.1;
 ksh = round(k1* nsh); % number of winners
 kgh = round(k1* ngh);
 
@@ -45,7 +45,7 @@ h_sgh = 1./(1 + exp(-eta_sgh) );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-k2 = 0.2;
+k2 = 0.1;
 nh = length(Who);
 kh = round(k2*nh);
 

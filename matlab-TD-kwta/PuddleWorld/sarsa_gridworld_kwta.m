@@ -2,7 +2,7 @@
 clc, close all, clear all;
 withBias = true;
 
-nMeshx = 20; nMeshy = 20;
+nMeshx = 10; nMeshy = 10;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';
@@ -177,7 +177,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
           
      % initializing time
      ts = 1;
-     [Q,h,id] = kwta_NN_forward_new(st,shunt,Wih,biasih,Who,biasho);
+     [Q,h,id] = kwta_NN_forward_new(st,Wih,biasih,Who,biasho);
      act = e_greedy_policy(Q,nActions,epsilon);
 
     %% Episode While Loop
@@ -208,8 +208,8 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         end
         
         % reward/punishment from Environment
-        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall,nTilex,nTiley);
-        [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,shunt,Wih,biasih,Who,biasho);
+        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall);
+        [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,Wih,biasih,Who,biasho);
         
         % make the greedy action selection in st+1: 
         actp1 = e_greedy_policy(Qp1,nActions,epsilon);
@@ -218,12 +218,12 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             % stp1 is not the terminal state
             delta = rew + gamma * Qp1(actp1) - Q(act);
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
-            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho);
+            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
         else
             % stp1 is the terminal state ... no Q(s';a') term in the sarsa update
             fprintf('Reaching to Goal at episode =%d at step = %d and mean(delta) = %f \n',ei,ts,mean(deltaForStepsOfEpisode));
             delta = rew - Q(act);
-            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,alpha,delta,Wih,biasih,Who,biasho);
+            [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
            break; 
         end
         % update (st,at) pair:

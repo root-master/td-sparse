@@ -27,7 +27,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  length(xInputInterval) + length(yInputInterval);
-nCellHidden1 = round(nStates);
+nCellHidden1 = round(nStates/2);
 nCellHidden2 = round(nStates);
 
 mu = 0.01;
@@ -109,12 +109,12 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
      % initialize the starting state - Continuous state
      s0 = initializeState(xVector,yVector);
      s = s0;
-%      goalinPuddle = true;
-%      while (goalinPuddle),
-%         g = initializeState(xVector,yVector);
-%         [goalinPuddle,~] = CreatePuddle(g);
-%      end
-     g = neighbor_state(s0,xVector,yVector,radius);
+     goalinPuddle = true;
+     while (goalinPuddle),
+        g = initializeState(xVector,yVector);
+        [goalinPuddle,~] = CreatePuddle(g);
+     end
+%     g = neighbor_state(s0,xVector,yVector,radius);
 
 
 % Gaussian Distribution on continuous state
@@ -204,9 +204,9 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         epsilon = bound(epsilon * 0.99,[epsilon_min,epsilon_max]);
     end
     
-%     if mod(ei,5000)==0
-%         radius = bound(1.05 * radius, [0.1,1.0]);
-%     end
+    if mod(ei,5000)==0
+        radius = bound(1.05 * radius, [0.1,1.0]);
+    end
 
     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
         convergence = true;

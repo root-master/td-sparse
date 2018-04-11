@@ -2,7 +2,7 @@
 clc, close all, clear all;
 withBias = false;
 
-nMeshx = 20; nMeshy = 20;
+nMeshx = 10; nMeshy = 10;
 nTilex = 1; nTiley = 1;
 
 functionApproximator = 'kwtaNN';
@@ -205,7 +205,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
      ts = 1;
      switch functionApproximator,
          case 'kwtaNN'
-             [Q,h,id] = kwta_NN_forward_new(st,shunt,Wih,biasih,Who,biasho);
+             [Q,h,id] = kwta_NN_forward_new(st,Wih,biasih,Who,biasho);
              
          case 'allHiddenUnitsForwardButNoErrorForLosers'
              [Q,h,id] = kwta_NN_forward_new(st,shunt,Wih,biasih,Who,biasho);
@@ -252,10 +252,10 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         end
         
         % reward/punishment from Environment
-        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall,nTilex,nTiley);
+        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall);
         switch functionApproximator,
             case 'kwtaNN',
-                [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,shunt,Wih,biasih,Who,biasho);
+                [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,Wih,biasih,Who,biasho);
             case 'allHiddenUnitsForwardButNoErrorForLosers'
                 [Qp1,hp1,idp1] = kwta_NN_forward_new(stp1,shunt,Wih,biasih,Who,biasho);
             case 'LosersForwardZeroButErrorForAll'
@@ -283,7 +283,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
             % Update Neural Net
            switch functionApproximator,
                case 'kwtaNN',
-                   [Wih,biasih,Who,biasho] = Update_kwtaNN_new(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
+                   [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho);
                case 'allHiddenUnitsForwardButNoErrorForLosers'
                    [Wih,biasih,Who,biasho] = Update_kwtaNN(st,act,h,id,alpha,delta,Wih,biasih,Who,biasho,withBias);
                case 'LosersForwardZeroButErrorForAll'

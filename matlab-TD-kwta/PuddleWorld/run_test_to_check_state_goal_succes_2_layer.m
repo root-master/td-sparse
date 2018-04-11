@@ -1,1 +1,0 @@
-function run_test_to_check_state_goal_succes_2_layer()

@@ -32,7 +32,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 14641;%round( nStates^2 / 4);
+nCellHidden = 1464;%round( nStates^2 / 4);
 mu = 0.001;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
@@ -164,7 +164,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     
         if( ~agentReached2Goal ) 
             % stp1 is not the terminal state
-            delta = rew + gamma * max(Qp1) - Q(act);
+            delta = rew + gamma * Qp1(actp1) - Q(act);
             deltaForStepsOfEpisode = [deltaForStepsOfEpisode,delta];
            
             % Update Neural Net
@@ -202,9 +202,9 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         epsilon = bound(epsilon * 0.99,[epsilon_min,epsilon_max]);
     end
     
-%     if mod(ei,5000)==0
-%         radius = bound(1.05 * radius, [0.1,1.0]);
-%     end
+    if mod(ei,5000)==0
+        radius = bound(1.05 * radius, [0.1,1.0]);
+    end
 
     
 %     if ( ei>1000) && (abs(sum(delta_sum)) / total_num_steps) < 0.2 && agentReached2Goal,
