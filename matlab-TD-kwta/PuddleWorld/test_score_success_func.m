@@ -1,4 +1,4 @@
-function [successful_key_door_episodes, successful_key_episodes, scores_vec, total_episodes] = test_score_success_func(Wih, biasih, Who, biasho)
+function [successful_key_door_episodes, successful_key_episodes, successful_easy_episodes, scores_vec, total_episodes] = test_score_success_func(Wih, biasih, Who, biasho)
 
 nMeshx = 10; nMeshy = 10;
 
@@ -10,7 +10,8 @@ xgridInput = 1.0 / nMeshx;
 ygridInput = 1.0 / nMeshy;
 xInputInterval = 0 : xgridInput : 1.0;
 yInputInterval = 0 : ygridInput : 1.0;
-
+xVector = xInputInterval;
+yVector = yInputInterval;
 xgrid = 1 / (nMeshx);
 ygrid = 1 / (nMeshy);
 % parameter of Gaussian Distribution
@@ -71,11 +72,17 @@ for x=xInputInterval,
             end
             
             
-             sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
-             sy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,s(2),sigmay);
-             gx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,g(1),sigmax);
-             gy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,g(2),sigmay);
-             % Using st as distributed input for function approximator
+%              sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
+%              sy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,s(2),sigmay);
+%              gx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,g(1),sigmax);
+%              gy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,g(2),sigmay);
+             sx = xInputInterval == s(1);
+             sy = yInputInterval == s(2);
+             gx = xInputInterval == g(1);
+             gy = yInputInterval == g(2);
+
+
+            % Using st as distributed input for function approximator
              st = [sx,sy,gx,gy];                
              Q = kwta_NN_forward_new(st, Wih, biasih, Who, biasho);
              [~,a] = max(Q);
@@ -99,3 +106,52 @@ for x=xInputInterval,
         total_episodes = total_episodes + 1;
     end
 end
+
+
+
+
+radius = 0.11;
+successful_easy_episodes = [];
+ep_id = 1;
+for x=xInputInterval,
+    for y=yInputInterval,
+        t = 1;
+        scores = 0;
+        s0=[x,y];
+        [agentinPuddle,~] = CreatePuddle(s0);
+        if agentinPuddle
+            continue
+        end
+        s = s0;
+        g = neighbor_state(s0,xVector,yVector,radius);
+        while(t<=max_iter)
+            %fprintf('s = %g %g \n',s);
+            if success(s,g)
+                successful_easy_episodes = [successful_easy_episodes, ep_id];
+                break
+            end
+                        
+             sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
+             sy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,s(2),sigmay);
+             gx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,g(1),sigmax);
+             gy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,g(2),sigmay);
+
+            % Using st as distributed input for function approximator
+             st = [sx,sy,gx,gy];                
+             Q = kwta_NN_forward_new(st, Wih, biasih, Who, biasho);
+             [~,a] = max(Q);
+             sp1 = UPDATE_STATE(s,a,xgrid,xInputInterval,ygrid,yInputInterval);             
+             s = sp1;
+             t = t+1;
+        end                
+        ep_id = ep_id + 1;
+    end
+end
+
+
+
+
+
+
+
+

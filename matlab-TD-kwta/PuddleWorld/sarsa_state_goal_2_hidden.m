@@ -35,7 +35,7 @@ InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
 nCellHidden1 = nStates;
 nCellHidden2 = round(0.5 * nStates);%nStates;
 
-mu = 0.001;
+mu = 0.1;
 Wih = mu * (rand(InputSize,nCellHidden1) - 0.5);
 biasih = mu * ( rand(1,nCellHidden1) - 0.5 );
 
@@ -47,7 +47,14 @@ biash1h2 = mu * ( rand(1,nCellHidden2) - 0.5 );
 Who = mu * (rand(nCellHidden2,nActions) - 0.5);
 biasho = mu * ( rand(1,nActions) - 0.5 );
 
-alpha = 0.00001;
+epsilon_max = 0.1;
+epsilon_min = 0.0001;
+epsilon = epsilon_max;  % epsilon greedy parameter
+
+
+alpha_min = 0.000001;
+alpha_max = 0.005;
+alpha = alpha_max;
 
 % on each grid we can choose from among this many actions 
 % [ up , down, right, left ]
@@ -92,23 +99,34 @@ delta_sum = [];
 save_episodes = 0:1000:1000000;
 total_num_steps = 0;
 g = [1,1]; % just initalization --> it's gonna change
+radius = 0.15;
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
     if ismember(ei,save_episodes)
         filename = ['./results/weights',int2str(ei),'.mat'];
         %save(filename,'Wih','biasih','Who','biasho');
     end
-    ei = ei + 1;
+    
+    
+    if mod(ei,1000)==0
+        [successful_key_door_episodes, successful_key_episodes, successful_easy_episodes, scores_vec, total_episodes] = test_score_success_func_2_hidden(Wih, biasih,Wh1h2,biash1h2, Who, biasho);
+        fprintf('average success: %.4f \n',length(successful_key_episodes)/total_episodes);
+        pause(5)
+    end
+
     
     deltaForStepsOfEpisode = [];
      % initialize the starting state - Continuous state
-     s = initializeState(xVector,yVector);
-     s0 = s;
-     goalinPuddle = true;
-     while (goalinPuddle),
-        g = initializeState(xVector,yVector);
-        [goalinPuddle,~] = CreatePuddle(g);
-     end
-     % Gaussian Distribution on continuous state
+     s0 = initializeState(xVector,yVector);
+     s = s0;
+%      goalinPuddle = true;
+%      while (goalinPuddle),
+%         g = initializeState(xVector,yVector);
+%         [goalinPuddle,~] = CreatePuddle(g);
+%      end
+     g = neighbor_state(s0,xVector,yVector,radius);
+
+
+% Gaussian Distribution on continuous state
      sx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,s(1),sigmax);
      sy = sigmay * sqrt(2*pi) * normpdf(yInputInterval,s(2),sigmay);
      gx = sigmax * sqrt(2*pi) * normpdf(xInputInterval,g(1),sigmax);
@@ -120,7 +138,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
      ts = 1;
      [Q,h_1,h_1_id,h_2,h_2_id] = kwta_NN_forward_2_layer(st, Wih,biasih, Wh1h2,biash1h2, Who,biasho);
      act = e_greedy_policy(Q,nActions,epsilon);
-
+     ei = ei + 1;
     %% Episode While Loop
     while( ~(s(1)==g(1) && s(2)==g(2)) && ts < maxIteratonEpisode),
         % update state to state+1
@@ -143,7 +161,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         end
         
         % reward/punishment from Environment
-        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall,nTilex,nTiley);
+        rew = ENV_REWARD(sp1,agentReached2Goal,agentBumped2wall);
         [Qp1,hp1_1,hp1_1_id,hp1_2,hp1_2_id] = kwta_NN_forward_2_layer(st, Wih,biasih, Wh1h2,biash1h2, Who,biasho);
         
         % make the greedy action selection in st+1: 
@@ -191,6 +209,15 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 %         nGoodEpisodes = 0;
 %     end
     
+    if mod(ei,1000)==0    
+        alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
+        epsilon = bound(epsilon * 0.99,[epsilon_min,epsilon_max]);
+    end
+    
+    if mod(ei,5000)==0
+        radius = bound(1.05 * radius, [0.1,1.0]);
+    end
+
     if  abs(sum(delta_sum) ) / total_num_steps< 0.05 && nGoodEpisodes> nStates*nTilex*nTiley,
         convergence = true;
         fprintf('Convergence at episode: %d \n',ei);
