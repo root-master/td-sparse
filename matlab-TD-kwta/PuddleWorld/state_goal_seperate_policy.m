@@ -146,12 +146,12 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         [goalinPuddle,~] = CreatePuddle(g);
      end
      % initialize the starting state - Continuous state
-%      s0inPuddle = true;
-%      while (s0inPuddle),
-%         s0 = initializeState(xVector,yVector);
-%         [s0inPuddle,~] = CreatePuddle(s0);
-%      end
-    s0 = initializeState(xVector,yVector);
+     s0inPuddle = true;
+     while (s0inPuddle),
+        s0 = initializeState(xVector,yVector);
+        [s0inPuddle,~] = CreatePuddle(s0);
+     end
+     %s0 = initializeState(xVector,yVector);
      s = s0;
      % g = neighbor_state(s0,xVector,yVector,radius);
      
