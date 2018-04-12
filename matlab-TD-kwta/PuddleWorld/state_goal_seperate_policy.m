@@ -59,8 +59,8 @@ epsilon_min = 0.01;
 epsilon = epsilon_max;  % epsilon greedy parameter
 
 
-alpha_min = 0.0001;
-alpha_max = 0.002;
+alpha_min = 0.002;
+alpha_max = 0.005;
 alpha = alpha_max;
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
@@ -243,14 +243,14 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 
     %% Exploration vs. Exploitation    
     if agentReached2Goal,
-        %alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
+        %alpha = bound(alpha * 0.999,[alpha_min,alpha_max]);
         epsilon = bound(epsilon * 0.999,[epsilon_min,epsilon_max]);
     else
         epsilon = bound(epsilon * 1.001,[epsilon_min,epsilon_max]);
-        %alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
+        %alpha = bound(alpha * 1.001,[alpha_min,alpha_max]);
     end
     
-    if mod(ei,100000) == 0
+    if mod(ei,10000) == 0
         file_name = 'everything_April_12th.mat';
         save(file_name) 
     end

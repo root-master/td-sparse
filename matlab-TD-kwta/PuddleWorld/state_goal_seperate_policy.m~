@@ -59,8 +59,8 @@ epsilon_min = 0.01;
 epsilon = epsilon_max;  % epsilon greedy parameter
 
 
-alpha_min = 0.0001;
-alpha_max = 0.002;
+alpha_min = 0.001;
+alpha_max = 0.005;
 alpha = alpha_max;
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
@@ -250,9 +250,9 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         %alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
     end
     
-    if mod(ei,500000)
-        file_name = 'everything_April_12th',,'.mat'
-        save 
+    if mod(ei,100000) == 0
+        file_name = 'everything_April_12th.mat';
+        save(file_name) 
     end
 %     if mod(ei,1000)==0    
 %         alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
