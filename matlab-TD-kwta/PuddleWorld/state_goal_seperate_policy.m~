@@ -84,7 +84,7 @@ yVector = 0:ygrid:1;
 nStates = length(xInputInterval) * length(yInputInterval);
 
 %% Different Max number of episodes
-maxNumEpisodes = 1000000;
+maxNumEpisodes = 10000000;
 
 nGoodEpisodes = 0; % a variable for checking the convergence
 convergence = false;
@@ -100,11 +100,12 @@ results_basic_score = [];
 results_basic_success = [];
 results_hard_score = [];
 results_medium_score = [];
-results_easy_score = [];
 results_hard_success = [];
 results_medium_success = [];
 results_easy_success = [];
 results_hard_score_best = [];
+results_medium_score_best = [];
+results_basic_score_best = [];
 
 while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is counter for episodes
     if ismember(ei,save_episodes)
@@ -121,18 +122,21 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         results_medium_success = [results_medium_success, length(successful_key_episodes)/total_episodes];
         results_medium_score = [results_medium_score,mean(score_key)];
         results_easy_success = [results_easy_success, length(successful_easy_episodes)/total_episodes];
-
+        results_hard_score_best = [results_hard_score_best,max(scores_vec)];
+        results_medium_score_best = [results_medium_score_best,max(score_key)];
+        results_basic_score_best = [results_basic_score_best,max(scores_vec_basic)];
         
         fprintf('average success hard     : %.4f \n',length(successful_key_door_episodes)/total_episodes);
         fprintf('average success basic    : %.4f \n',length(successful_basic_key_door)/total_episodes);
         fprintf('average success medium   : %.4f \n',length(successful_key_episodes)/total_episodes);
         fprintf('average success easy     : %.4f \n',length(successful_easy_episodes)/total_episodes);
-        fprintf('average score   hard     : %.4f \n',);
-        fprintf('average score   basic    : %.4f \n',length(successful_basic_key_door)/total_episodes);
-        fprintf('average score   medium   : %.4f \n',length(successful_key_episodes)/total_episodes);
-        fprintf('average score   easy     : %.4f \n',length(successful_easy_episodes)/total_episodes);
+        fprintf('average score   hard     : %.4f \n',mean(scores_vec));
+        fprintf('average score   basic    : %.4f \n',mean(scores_vec_basic));
+        fprintf('average score   medium   : %.4f \n',mean(score_key));
+        fprintf('max score       hard     : %.4f \n',max(scores_vec));
+        fprintf('max score       basic    : %.4f \n',max(scores_vec_basic));
+        fprintf('max score       medium   : %.4f \n',max(score_key));
 
-        
         pause(5)
     end
       
@@ -239,11 +243,16 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 
     %% Exploration vs. Exploitation    
     if agentReached2Goal,
-        alpha = bound(alpha * 0.999,[alpha_min,alpha_max]);
+        %alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
         epsilon = bound(epsilon * 0.999,[epsilon_min,epsilon_max]);
     else
         epsilon = bound(epsilon * 1.001,[epsilon_min,epsilon_max]);
-        alpha = bound(alpha * 1.001,[alpha_min,alpha_max]);
+        %alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
+    end
+    
+    if mod(ei,500000)
+        file_name = 'everything_April_12th',,'.mat'
+        save 
     end
 %     if mod(ei,1000)==0    
 %         alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
@@ -281,11 +290,5 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
     
 
 end  % end episode loop
-
-filename = './results/weights.mat';
-save(filename,'W_ih_big','b_ih_big','W_ho_big','b_ho_big');
-
-filename = './results/test.mat';
-
 
 

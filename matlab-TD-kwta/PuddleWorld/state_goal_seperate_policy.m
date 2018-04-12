@@ -243,11 +243,16 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 
     %% Exploration vs. Exploitation    
     if agentReached2Goal,
-        alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
-        epsilon = bound(epsilon * 0.99,[epsilon_min,epsilon_max]);
+        %alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
+        epsilon = bound(epsilon * 0.999,[epsilon_min,epsilon_max]);
     else
-        epsilon = bound(epsilon * 1.01,[epsilon_min,epsilon_max]);
-        alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
+        epsilon = bound(epsilon * 1.001,[epsilon_min,epsilon_max]);
+        %alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
+    end
+    
+    if mod(ei,10000)
+        file_name = ['everything_April_12th_episode_',int2str(ei),'.mat'];
+        save(file_name) 
     end
 %     if mod(ei,1000)==0    
 %         alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
@@ -286,5 +291,4 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 
 end  % end episode loop
 
-save 'everything_April_12th.mat'
 

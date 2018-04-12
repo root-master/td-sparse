@@ -4,11 +4,9 @@ function rew = ENV_REWARD(s,agentReached2Goal,agentBumped2wall)
 if agentReached2Goal,
     rew = 0;
 elseif agentinPuddle,
-    rew = min(-400 * dist2Edge,-2);
+    rew = -400 * dist2Edge;
 elseif agentBumped2wall,
     rew = -2;
 else
     rew = -1;
 end
-
-rew = rew / 400;
