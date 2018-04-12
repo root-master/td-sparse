@@ -153,11 +153,12 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 %      end
     s0 = initializeState(xVector,yVector);
      s = s0;
-     g = neighbor_state(s0,xVector,yVector,radius);
+     % g = neighbor_state(s0,xVector,yVector,radius);
+     
      [~,gidx] = min(dist(g(1),xInputInterval));
      [~,gidy] = min(dist(g(2),yInputInterval));
-
      gid = sub2ind([length(xVector),length(yVector)],gidx,gidy);
+ 
      Wih = W_ih_big(:,:,gid);
      biasih = b_ih_big(:,:,gid);
      Who = W_ho_big(:,:,gid);
