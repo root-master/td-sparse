@@ -109,12 +109,12 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
      % initialize the starting state - Continuous state
      s0 = initializeState(xVector,yVector);
      s = s0;
-     goalinPuddle = true;
-     while (goalinPuddle),
-        g = initializeState(xVector,yVector);
-        [goalinPuddle,~] = CreatePuddle(g);
-     end
-%     g = neighbor_state(s0,xVector,yVector,radius);
+%      goalinPuddle = true;
+%      while (goalinPuddle),
+%         g = initializeState(xVector,yVector);
+%         [goalinPuddle,~] = CreatePuddle(g);
+%      end
+     g = neighbor_state(s0,xVector,yVector,radius);
 
 
 % Gaussian Distribution on continuous state
@@ -200,7 +200,7 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
 %     end
     
     if mod(ei,1000)==0    
-        alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
+        %alpha = bound(alpha * 0.99,[alpha_min,alpha_max]);
         epsilon = bound(epsilon * 0.99,[epsilon_min,epsilon_max]);
     end
     

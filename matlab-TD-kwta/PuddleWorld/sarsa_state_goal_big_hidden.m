@@ -32,7 +32,7 @@ nActions = 4;
 %% kwta and regular BP Neural Network
 % Weights from input (x,y,x_goal,y_goal) to hidden layer
 InputSize =  2 * ( length(xInputInterval) + length(yInputInterval ));
-nCellHidden = 1464;%round( nStates^2 / 4);
+nCellHidden = 10000;%round( nStates^2 / 4);
 mu = 0.001;
 Wih = mu * (rand(InputSize,nCellHidden) - 0.5);
 biasih = mu * ( rand(1,nCellHidden) - 0.5 );
@@ -52,7 +52,7 @@ epsilon = epsilon_max;  % epsilon greedy parameter
 
 
 alpha_min = 0.000001;
-alpha_max = 0.00001;
+alpha_max = 0.0001;
 alpha = alpha_max;
 % Max number of iteration in ach episde to break the loop if AGENT
 % can't reach the GOAL 
