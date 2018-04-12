@@ -250,8 +250,8 @@ while (ei < maxNumEpisodes && ~convergence ), % ei<maxNumEpisodes && % ei is cou
         %alpha = bound(alpha * 1.01,[alpha_min,alpha_max]);
     end
     
-    if mod(ei,10000) == 0
-        file_name = ['everything_April_12th_episode_',int2str(ei),'.mat'];
+    if mod(ei,100000) == 0
+        file_name = 'everything_April_12th.mat';
         save(file_name) 
     end
 %     if mod(ei,1000)==0    
