@@ -19,7 +19,7 @@ sigmax = 1.0 / nMeshx;
 sigmay = 1.0 / nMeshy;
 
 ep_id = 1;
-max_iter = 100;
+max_iter = 500;
 total_episodes = 0;
 
 keyinPuddle = true;

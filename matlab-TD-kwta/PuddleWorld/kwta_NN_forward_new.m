@@ -4,7 +4,7 @@ shunt = 1;
 
 nCellHidden = length(Wih);
 
-k_rate = 0.01;
+k_rate = 0.1;
 
 k = round(k_rate* nCellHidden); % number of winners
 
@@ -29,7 +29,4 @@ eta = net - biaskwta - shunt; % shunt is a positive number which is the shift to
 h = 1./(1 + exp(-eta) );
 
 o = h * Who + biasho; % Output
-
-
-
 
